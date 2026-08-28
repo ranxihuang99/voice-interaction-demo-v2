@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: voice-interaction-demo-v2
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    autoDeploy: true

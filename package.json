@@ -1,0 +1,12 @@
+{
+  "name": "voice-interaction-demo-v2",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Voice interaction prototype with writing and spreadsheet scenarios",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

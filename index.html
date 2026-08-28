@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>系统语音触屏交互原型 · 心理健康课程心得</title>
+<style>
+*{box-sizing:border-box}:root{--shell:#eeede9;--paper:#f8f7f3;--ink:#20201e;--muted:#77736b}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--shell);font-family:"PingFang SC","Helvetica Neue",sans-serif;color:var(--ink)}.lab{height:100vh;display:grid;grid-template-columns:230px minmax(560px,1fr) 280px;grid-template-rows:74px 1fr}.head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid #d9d7d0;background:rgba(248,247,243,.9)}.brand{display:flex;align-items:center;gap:13px}.mark{width:34px;height:34px;border-radius:11px;background:#20201e;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}.brand b{font-size:15px}.brand small{display:block;color:#888780;font-size:11px;margin-top:2px}.version{font-size:11px;color:#77756f;border:1px solid #d9d7d0;padding:7px 10px;border-radius:99px}.rail{padding:28px 21px;border-right:1px solid rgba(0,0,0,.08);background:#f5f4f0}.kicker{font-size:10px;letter-spacing:.16em;color:#99968e;margin:0 0 16px}.feature{display:block;width:100%;text-align:left;font:inherit;border:1px solid #dedbd3;border-radius:16px;padding:15px;background:rgba(255,255,255,.55);cursor:pointer}.feature+.feature{margin-top:11px}.feature.active{background:#fff;border-color:#cac6bc;box-shadow:0 8px 25px rgba(39,34,25,.08);transform:translateX(3px)}.no{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#e5e2da;color:#69665f;font-size:10px;font-weight:800;margin-bottom:9px}.feature.active .no{background:#dcefe3;color:#28744c}.feature strong{font-size:14px}.feature p{margin:6px 0 0;font-size:11px;line-height:1.55;color:#77736b}.soon{margin-top:12px;padding:13px;border:1px dashed #d7d3ca;border-radius:14px;color:#aaa69e;font-size:11px}.demo-wrap{position:relative;display:grid;place-items:center;padding:22px 22px 76px;overflow:hidden;background:radial-gradient(circle at 50% 45%,#fff 0,#eeede9 66%)}.frame{position:relative;height:min(calc(100vh - 118px),760px);aspect-ratio:1276/1440;padding:8px;border-radius:22px;background:#1d1d1c;box-shadow:0 28px 65px rgba(38,32,23,.22)}.stage{position:relative;width:100%;height:100%;border-radius:15px;overflow:hidden;background:#fff;touch-action:none;user-select:none;container-type:size}.screen{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}.note-layer{position:absolute;z-index:5;left:40.15%;top:13.2%;right:0;bottom:0;padding:2.1% 6.2% 5%;background:#fff;overflow:hidden}.note-title{font-size:2.7cqw;line-height:1.25;margin:0 0 1.8%}.meta{font-size:1.16cqw;color:#aaa;margin-bottom:5%}.requirements{font-size:1.77cqw;line-height:1.68}.requirement{margin:.18em 0;padding:.08em .2em;border-radius:.35em;transition:.18s}.select-unit.selected{color:#26364e;background:linear-gradient(90deg,rgba(109,171,255,.42),rgba(103,225,227,.5),rgba(255,222,107,.42),rgba(255,151,187,.25));box-shadow:0 0 0 1px rgba(81,120,255,.05)}.essay{display:none;font-size:1.46cqw;line-height:1.62}.result .requirements{display:none}.result .essay{display:block;animation:reveal .55s ease both}.essay p{margin:.75em 0}.essay-label{font-weight:800;margin-right:.35em}.essay .select-unit{padding:.08em .2em;border-radius:.35em}.result-note{display:inline-block;margin-bottom:.3em;padding:.32em .65em;border-radius:99px;background:#eef5f0;color:#397054;font-size:.9em}.voice{position:absolute;z-index:30;left:50%;bottom:18px;width:min(520px,calc(100% - 44px));transform:translate(-50%,14px);padding:12px 16px;border-radius:16px;background:rgba(30,31,34,.95);color:#fff;box-shadow:0 14px 34px rgba(30,28,24,.2);opacity:0;pointer-events:none;transition:.25s}.voice.show{opacity:1;transform:translate(-50%,0)}.voice.processing .voice-state{color:#ffe28b}.voice-top{display:flex;align-items:center;gap:8px;color:#c9ccd1;font-size:10px;margin-bottom:6px}.voice-state{margin-left:auto;color:#8fe0e4}.voice-text{font-size:14px;line-height:1.45;min-height:1.45em}.wave{display:flex;align-items:center;gap:2px;height:15px}.wave i{width:2px;height:35%;border-radius:2px;background:#70d9e2;animation:wave .55s ease-in-out infinite alternate}.wave i:nth-child(2n){height:90%;animation-delay:-.25s}@keyframes wave{to{height:100%;background:#ff9ac1}}@keyframes reveal{from{opacity:0;transform:translateY(1em);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}.scale-panel{display:none}.mode2 .scale-panel{display:block}.scale-help{position:absolute;z-index:13;right:2.5%;bottom:3%;padding:.55em .75em;border-radius:.7em;background:rgba(32,33,36,.9);color:#fff;font-size:.9cqw;opacity:.82}.pinch-handle{position:absolute;z-index:18;right:3.5%;width:2.7cqw;height:2.7cqw;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid #777;box-shadow:0 .35cqw 1cqw rgba(0,0,0,.18);cursor:ns-resize;touch-action:none}.pinch-handle:after{content:"";position:absolute;inset:.78cqw;border-radius:50%;background:#ef744c}.pinch-handle.bottom:after{background:#5fbfd0}.pinch-line{position:absolute;z-index:17;right:4.8%;width:2px;background:linear-gradient(#ef744c,#ffe067,#5fbfd0);opacity:.8}.density-indicator{position:absolute;z-index:19;right:7.2%;padding:.35em .55em;border-radius:99px;background:#eef5f0;color:#28744c;font-size:.9cqw}.semantic-changing{animation:semantic .28s ease}@keyframes semantic{50%{opacity:.25;filter:blur(2px)}}.help{padding:32px 24px;border-left:1px solid rgba(0,0,0,.08);background:var(--paper)}.help h2{font-size:20px;margin:12px 0 8px}.intro{font-size:12px;line-height:1.7;color:#76736b;margin:0 0 22px}.steps{list-style:none;margin:0;padding:0}.steps li{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:12px 0;border-top:1px solid #e3e0d8;font-size:12px;line-height:1.5}.steps i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#e8e5dd;display:grid;place-items:center;font-size:10px}.steps b{display:block}.steps span{font-size:11px;color:#89857d}.reset{width:100%;margin-top:20px;border:1px solid #d8d4cb;border-radius:12px;padding:11px;background:#fff;color:#4d4a44;font:inherit;font-size:11px;cursor:pointer}.tip{margin-top:15px;font-size:10px;line-height:1.6;color:#8a867e}.touch{display:inline-block;width:13px;height:13px;border:1px solid #aaa;border-radius:50%;background:#fff;vertical-align:-2px;margin-right:4px}@media(max-width:1050px){.lab{grid-template-columns:180px minmax(500px,1fr) 230px}.rail,.help{padding:22px 15px}.frame{height:min(calc(100vh - 110px),680px)}}
+.touch-indicator{position:absolute;z-index:28;width:3.2cqw;height:3.2cqw;margin:-1.6cqw 0 0 -1.6cqw;border:2px solid rgba(43,46,51,.72);border-radius:50%;background:rgba(255,255,255,.78);box-shadow:0 .45cqw 1.2cqw rgba(0,0,0,.2),0 0 0 .65cqw rgba(100,210,221,.17);opacity:0;pointer-events:none;transition:opacity .16s}.touch-indicator:after{content:"";position:absolute;inset:.82cqw;border-radius:50%;background:#70d9e2}.touch-indicator.show{opacity:1}.touch-indicator.holding{animation:touchPulse .9s ease-in-out infinite}.touch-indicator.holding:after{background:#ef8daa}@keyframes touchPulse{50%{box-shadow:0 .45cqw 1.2cqw rgba(0,0,0,.15),0 0 0 1.25cqw rgba(112,217,226,.12)}}.pinch-handle,.pinch-line,.density-indicator{pointer-events:none;transition:top .18s ease,height .18s ease}.pinch-handle.active{box-shadow:0 .35cqw 1cqw rgba(0,0,0,.18),0 0 0 .75cqw rgba(112,217,226,.2)}.scale-help{display:none!important}.note-layer.mode2,.note-layer.mode4{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}.note-layer.mode2::-webkit-scrollbar,.note-layer.mode4::-webkit-scrollbar{display:none}.answer-indicator{position:absolute;z-index:24;display:none;align-items:center;gap:.65em;padding:.38em .72em;border:1px solid rgba(47,65,79,.16);border-radius:99px;background:rgba(255,255,255,.94);box-shadow:0 .35cqw 1.2cqw rgba(35,46,55,.15);color:#465863;font-size:.95cqw;pointer-events:none}.answer-indicator.show{display:flex}.answer-arrow{font-size:1.35em;color:#6f8a94}.rewrite-changing{animation:rewriteSlide .3s ease}@keyframes rewriteSlide{0%{opacity:.25;transform:translateX(var(--slide-from,1.2em))}100%{opacity:1;transform:none}}.requirement.generated-partial{margin:.72em 0;font-size:.83em;line-height:1.62;animation:reveal .45s ease}.requirement.generated-partial .essay-label{font-size:1.05em}.format-commands{display:none;margin:18px 0 4px;padding-top:14px;border-top:1px solid #e3e0d8}.format-commands.show{display:block}.format-commands>span{display:block;margin-bottom:8px;color:#8b877f;font-size:10px}.format-commands button{width:100%;margin:4px 0;padding:8px 9px;border:1px solid #ddd9d0;border-radius:9px;background:#fff;color:#656159;font:inherit;font-size:10px;text-align:left;cursor:pointer}.format-commands button.active{border-color:#78a58f;background:#edf6f0;color:#286a4a}.format-headings .note-title{font-size:3.05cqw;font-weight:900}.format-headings .essay-label{font-size:1.22em;font-weight:900}.format-all-large .note-title{font-size:3.05cqw}.format-all-large .meta{font-size:1.45cqw}.format-all-large .essay{font-size:1.78cqw}.assignment-format .note-title{text-align:center;font-size:2.85cqw;margin-bottom:1.2%}.assignment-format .meta{text-align:center;margin-bottom:3.6%}.assignment-format .result-note{display:none}.assignment-format .essay{font-size:1.5cqw;line-height:1.85}.assignment-format .essay p{margin:1.05em 0;text-indent:2em}.assignment-format .essay-label{display:block;margin:0 0 .28em;text-indent:0;font-size:1.08em;font-weight:800;border-bottom:1px solid #e9e6df;padding-bottom:.25em}::highlight(ai-selection){background:rgba(109,207,215,.42);color:#26364e}.precise-selection-fallback{background:rgba(109,207,215,.42)}.word-file{display:none;align-items:center;gap:.75em;margin:1.2em 0;padding:.85em 1em;border:1px solid #d8e1dc;border-radius:10px;background:#f5faf7;color:#2e5944;text-decoration:none;text-indent:0}.word-file.show{display:flex}.word-icon{display:grid;place-items:center;width:2.3em;height:2.3em;border-radius:7px;background:#2b579a;color:#fff;font-weight:800}.word-file b{display:block;font-size:.95em}.word-file small{display:block;margin-top:.18em;color:#78877f}
+.format-headings .note-title{font-size:2.7cqw;font-weight:800}.format-headings .essay-label{display:block;margin-bottom:.22em;font-size:1.28em;font-weight:900}
+.selection-fragment{border-radius:.28em;background:linear-gradient(90deg,rgba(109,171,255,.42),rgba(103,225,227,.5),rgba(255,222,107,.42));box-decoration-break:clone;-webkit-box-decoration-break:clone}.selection-fragment.rewrite-changing{display:inline}
+.scene-tabs{display:flex;align-items:center;gap:8px;margin-left:auto;margin-right:18px}.scene-tab{display:flex;align-items:baseline;gap:7px;padding:8px 12px;border:1px solid #d9d7d0;border-radius:11px;color:#74716a;text-decoration:none;background:rgba(255,255,255,.45);font-size:11px;transition:.2s}.scene-tab b{font-size:12px;color:#4f4c46}.scene-tab.active{border-color:#b9cfc1;background:#fff;box-shadow:0 4px 14px rgba(39,34,25,.07)}.scene-tab.active b{color:#28744c}@media(max-width:900px){.scene-tab span{display:none}.scene-tabs{margin-right:8px}.head{padding:0 16px}}
+.scene-tabs{display:flex;align-items:center;gap:2px;margin:0 18px 0 auto;padding:5px;border:1px solid rgba(122,145,171,.12);border-radius:16px;background:rgba(255,255,255,.66);box-shadow:0 8px 24px rgba(69,89,112,.08)}.scene-tab{display:grid;grid-template-columns:auto minmax(0,1fr) 10px;grid-template-rows:auto auto;align-items:center;column-gap:10px;row-gap:1px;min-width:154px;height:52px;padding:8px 11px;border:1px solid transparent;border-radius:12px;color:#7f8994;text-decoration:none;background:transparent;transition:background .2s,border-color .2s,box-shadow .2s,transform .2s}.scene-tab:hover{background:rgba(241,247,253,.72)}.scene-tab:focus-visible{outline:2px solid #5aa8ef;outline-offset:2px}.scene-kicker{grid-row:1/3;align-self:center;font-size:10px;font-weight:700;color:#8f9aa6;white-space:nowrap}.scene-copy{display:block;min-width:0;line-height:1.05}.scene-copy b{display:block;overflow:hidden;color:#586779;font-size:12px;font-weight:700;line-height:1.2;white-space:nowrap;text-overflow:ellipsis}.scene-copy small{display:block;margin-top:3px;color:#9aa4ae;font-size:10px;line-height:1;white-space:nowrap}.scene-dot{grid-row:1/3;display:block;width:8px;height:8px;border-radius:50%;background:#b7c1cb}.scene-tab.active{border-color:#b9daf6;background:linear-gradient(180deg,#f5faff,#eaf5ff);box-shadow:0 4px 12px rgba(76,154,226,.14)}.scene-tab.active .scene-kicker,.scene-tab.active .scene-copy b{color:#2578bc}.scene-tab.active .scene-dot{background:#4a9ce6;box-shadow:0 0 0 4px rgba(74,156,230,.13)}@media(max-width:900px){.scene-tab span{display:block}.scene-tab{min-width:128px;column-gap:8px}.scene-copy small{display:none}}
+.scene-tab{min-width:185px}@media(max-width:900px){.scene-tab{min-width:128px}}
+.scene-tabs{margin:0 auto 0 18px}@media(max-width:900px){.scene-tabs{margin-left:8px}}
+.scene-kicker{grid-column:1}.scene-copy{grid-column:2;grid-row:1/3;align-self:center}.scene-dot{grid-column:3}
+
+/* motion-polish: refined hierarchy, feedback, and compositor-only motion */
+:root{--accent:#28744c;--accent-soft:#eaf4ee;--line:#dad7cf;--shadow-sm:0 4px 14px rgba(38,32,23,.07);--shadow-md:0 20px 52px rgba(38,32,23,.18);--motion-fast:140ms;--motion-standard:180ms}
+.lab{height:100dvh}.head{z-index:40;box-shadow:0 1px 0 rgba(255,255,255,.72),0 6px 18px rgba(44,39,31,.035)}.mark{box-shadow:0 5px 14px rgba(32,32,30,.16)}
+.rail,.help{overflow-y:auto}.rail{padding:30px 20px}.help{padding:32px 25px;box-shadow:inset 1px 0 rgba(255,255,255,.65)}.help h2,.note-title{text-wrap:balance}.intro,.feature p,.steps span{text-wrap:pretty}
+.feature,.reset,.format-commands button,.scene-tab{-webkit-tap-highlight-color:transparent;transition:transform var(--motion-fast) ease-out,opacity var(--motion-fast) ease-out}
+.feature{position:relative;isolation:isolate;padding:14px;border-color:var(--line);box-shadow:0 1px 0 rgba(255,255,255,.75)}.feature::before{content:"";position:absolute;z-index:0;left:-1px;top:18px;width:3px;height:28px;border-radius:0 4px 4px 0;background:var(--accent);opacity:0;transform:scaleY(.45);transform-origin:center;transition:transform var(--motion-standard) ease-out,opacity var(--motion-standard) ease-out}.feature:hover{transform:translateY(-1px)}.feature:active{transform:translateY(0) scale(.985)}.feature.active{transform:translateX(3px);box-shadow:var(--shadow-sm)}.feature.active::before{opacity:1;transform:scaleY(1)}.feature:focus-visible,.reset:focus-visible,.format-commands button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.scene-tab:hover{transform:translateY(-1px)}.scene-tab:active{transform:scale(.985)}.scene-tab.active{box-shadow:var(--shadow-sm)}
+.frame{box-shadow:var(--shadow-md),0 2px 0 rgba(255,255,255,.28) inset}.note-layer{box-shadow:-10px 0 24px rgba(44,39,31,.025)}
+.reset{border-color:var(--line);box-shadow:0 1px 0 rgba(255,255,255,.85)}.reset:hover,.format-commands button:hover{transform:translateY(-1px)}.reset:active,.format-commands button:active{transform:scale(.985)}.format-commands{margin-top:20px;padding-top:16px}.format-commands button{margin:5px 0;padding:9px 10px}.format-commands button.active{box-shadow:0 3px 10px rgba(40,116,76,.09)}
+.voice{z-index:40;bottom:20px;padding:13px 16px 14px;border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 42px rgba(20,20,18,.24);transform:translate(-50%,10px) scale(.985);transition:transform var(--motion-standard) ease-out,opacity var(--motion-standard) ease-out;overflow:hidden}.voice.show{transform:translate(-50%,0) scale(1)}.voice::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:#8fe0e4;opacity:0;transform:scaleX(.08);transform-origin:left}.voice.processing::after{animation:voiceProgress var(--motion-standard) ease-out both}.voice-text{font-weight:600}.voice-state{font-variant-numeric:tabular-nums}
+.wave i{height:100%;background:#70d9e2;transform-origin:center;animation:voiceWave .72s ease-in-out infinite alternate;animation-play-state:paused}.wave i:nth-child(2n){height:100%;animation-delay:-.24s}.voice.show:not(.processing) .wave i{animation-play-state:running}
+.result .essay{animation:none}.note-layer.mode-enter .requirements,.note-layer.mode-enter .essay,.note-layer.content-enter .essay{animation:contentEnter var(--motion-standard) ease-out both}.note-layer.content-enter .essay>.result-note,.note-layer.content-enter .essay>p{animation:itemEnter var(--motion-standard) ease-out both}.note-layer.content-enter .essay>p:nth-of-type(1){animation-delay:25ms}.note-layer.content-enter .essay>p:nth-of-type(2){animation-delay:50ms}.note-layer.content-enter .essay>p:nth-of-type(3){animation-delay:75ms}.note-layer.content-enter .essay>p:nth-of-type(4){animation-delay:100ms}.requirement.generated-partial{animation:itemEnter var(--motion-standard) ease-out both}.answer-indicator.show{display:flex;animation:popoverEnter var(--motion-fast) ease-out both}.word-file.show{animation:itemEnter var(--motion-standard) ease-out both}
+.rewrite-changing{animation:rewriteEnter var(--motion-standard) ease-out both}.semantic-changing{animation:semanticEnter var(--motion-fast) ease-out both}.touch-indicator.holding{animation:touchPulseCompositor .8s ease-in-out infinite}.pinch-handle,.pinch-line,.density-indicator{transition:none}.pinch-handle.active{transform:scale(1.08)}.note-layer.format-applied .note-title,.note-layer.format-applied .essay{animation:formatConfirm var(--motion-standard) ease-out both}
+@keyframes voiceWave{from{transform:scaleY(.28);opacity:.55}to{transform:scaleY(1);opacity:1}}@keyframes voiceProgress{from{opacity:.35;transform:scaleX(.08)}to{opacity:1;transform:scaleX(1)}}@keyframes contentEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes itemEnter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@keyframes popoverEnter{from{opacity:0;transform:translateY(5px) scale(.98)}to{opacity:1;transform:none}}@keyframes rewriteEnter{from{opacity:.2;transform:translateX(var(--slide-from,1.2em))}to{opacity:1;transform:none}}@keyframes semanticEnter{50%{opacity:.42;transform:scale(.99)}}@keyframes touchPulseCompositor{50%{opacity:.72;transform:scale(1.08)}}@keyframes formatConfirm{from{opacity:.62;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.wave i{animation-play-state:paused!important}}
+</style>
+</head>
+<body>
+<div class="lab">
+<header class="head">
+<div class="brand">
+<span class="mark">AI</span>
+<div>
+<b>系统语音触屏交互原型</b>
+<small>用手指确定对象，用语音表达意图</small>
+</div>
+</div>
+<nav class="scene-tabs" aria-label="演示场景"><a class="scene-tab active" href="./index.html" aria-current="page"><span class="scene-kicker">场景 1</span><span class="scene-copy"><b>课程心得</b><small>写作</small></span><span class="scene-dot" aria-hidden="true"></span></a><a class="scene-tab" href="./excel-demo.html"><span class="scene-kicker">场景 2</span><span class="scene-copy"><b>表格语音</b><small>处理</small></span><span class="scene-dot" aria-hidden="true"></span></a></nav>
+</header>
+<aside class="rail">
+<p class="kicker">INTERACTIONS</p>
+<button class="feature active" data-mode="1">
+<span class="no">01</span>
+<strong>语音生成内容</strong>
+<p>选中作业要求，长按说明意图，一次生成对应内容。</p>
+</button>
+<button class="feature" data-mode="2">
+<span class="no">02</span>
+<strong>语音改写与多答案</strong>
+<p>选中内容说明改写意图，左右滑动切换更多答案。</p>
+</button>
+<button class="feature" data-mode="3">
+<span class="no">03</span>
+<strong>语义详略调节</strong>
+<p>选中任意一句或一段，用双指纵向距离控制长短。</p>
+</button>
+<button class="feature" data-mode="4">
+<span class="no">04</span>
+<strong>语音样式编辑</strong>
+<p>选择对象并说出格式诉求，一次完成全文样式调整。</p>
+</button>
+<div class="soon">＋ 后续案例将继续承接这篇课程心得</div>
+</aside>
+<div class="demo-wrap">
+<div class="frame">
+<main class="stage" id="stage">
+<img class="screen" src="./psychology-requirements.png" alt="大学生心理健康教育课程心得笔记">
+<article class="note-layer" id="noteLayer">
+<h1 class="note-title select-unit">大学生心理健康教育课程心得体会</h1>
+<div class="meta">298 字｜工作笔记⌄</div>
+<section class="requirements" id="requirements">
+<p class="requirement select-unit">1. 对课程内容的理解和整体感受</p>
+<p class="requirement select-unit">2. 大学生可能面临的压力有哪些</p>
+<p class="requirement select-unit">3. 对课程哪部分的触动最深</p>
+<p class="requirement select-unit">4. 今后如何做</p>
+</section>
+<section class="essay" id="essay">
+<span class="result-note">已根据 4 项作业要求生成</span>
+<p class="select-unit" data-p="0">
+<span class="essay-label">课程理解：</span>
+<span class="copy">通过这学期的学习，我认识到心理健康不是没有烦恼，而是能够觉察情绪、调节压力，并以积极的方式面对生活。</span>
+</p>
+<p class="select-unit" data-p="1">
+<span class="essay-label">大学压力：</span>
+<span class="copy">大学生需要面对学业竞争、独立生活、人际关系以及未来就业的不确定性，这些都可能带来焦虑和自我怀疑。</span>
+</p>
+<p class="select-unit" data-p="2">
+<span class="essay-label">最深触动：</span>
+<span class="copy">情绪管理部分让我感触最深。负面情绪并不是坏事，它更像是内心发出的信号，提醒我们关注真实需求。</span>
+</p>
+<p class="select-unit" data-p="3">
+<span class="essay-label">今后行动：</span>
+<span class="copy">今后我会保持规律作息和运动，学会倾诉与求助，用更理性、宽容的态度对待自己，也更好地处理学习与人际关系。</span>
+</p>
+<a class="word-file" id="wordFile" download="大学生心理健康教育课程心得体会.doc"><span class="word-icon">W</span><span><b>大学生心理健康教育课程心得体会.doc</b><small>Word 作业文件 · 点击下载提交</small></span></a>
+</section>
+<div class="scale-panel" id="scalePanel">
+<span class="pinch-handle top" id="topHandle">
+</span>
+<span class="pinch-handle bottom" id="bottomHandle">
+</span>
+<span class="pinch-line" id="pinchLine">
+</span>
+<span class="density-indicator" id="densityIndicator">标准</span>
+<span class="scale-help">上指固定首行 · 下指距离对应正文行数</span>
+</div>
+<span class="touch-indicator" id="touchIndicator"></span>
+<div class="answer-indicator" id="answerIndicator"><span class="answer-arrow">‹</span><span id="answerCount">1 / 4</span><span class="answer-arrow">›</span></div>
+</article>
+</main>
+</div>
+<div class="voice" id="voice">
+<div class="voice-top">
+<span class="wave">
+<i>
+</i>
+<i>
+</i>
+<i>
+</i>
+<i>
+</i>
+<i>
+</i>
+</span>
+<span>语音指令</span>
+<span class="voice-state" id="voiceState">正在聆听</span>
+</div>
+<div class="voice-text" id="voiceText">
+</div>
+</div>
+</div>
+<aside class="help">
+<span class="kicker">HOW TO USE</span>
+<h2 id="helpTitle">选中要求，继续按住说</h2>
+<p class="intro" id="helpIntro">选区告诉 AI 参考哪部分，语音告诉 AI 要做什么。</p>
+<ol class="steps" id="steps">
+<li>
+<i>1</i>
+<div>
+<b>拖选作业要求</b>
+<span>可选 1–4 中的任意连续范围</span>
+</div>
+</li>
+<li>
+<i>2</i>
+<div>
+<b>停住不松手</b>
+<span>长按后自动进入语音输入</span>
+</div>
+</li>
+<li>
+<i>3</i>
+<div>
+<b>一次生成四段</b>
+<span>每段分别对应一项作业要求</span>
+</div>
+</li>
+</ol>
+<div class="format-commands" id="formatCommands">
+<span>本轮语音指令</span>
+<button class="active" data-format="0">把所有标题加粗放大 2 个字号</button>
+<button data-format="1">所有字号都放大 2 个</button>
+<button data-format="2">把格式改成规范的作业格式</button>
+</div>
+<button class="reset" id="reset">重置演示</button>
+<p class="tip">
+<span class="touch">
+</span>鼠标拖动可模拟手指选择；保持按住即可说话。</p>
+</aside>
+</div>
+<script>
+const $=s=>document.querySelector(s),noteLayer=$('#noteLayer'),requirements=$('#requirements'),essay=$('#essay'),voice=$('#voice'),voiceText=$('#voiceText'),voiceState=$('#voiceState'),topHandle=$('#topHandle'),bottomHandle=$('#bottomHandle'),pinchLine=$('#pinchLine'),densityIndicator=$('#densityIndicator'),touchIndicator=$('#touchIndicator'),scalePanel=$('#scalePanel'),answerIndicator=$('#answerIndicator'),answerCount=$('#answerCount'),formatCommands=$('#formatCommands');
+const instruction='帮我按照这些要求写一下这个课程的心得体会。',rewriteInstruction='这段内容写得不太好，换个角度写。',wait=ms=>new Promise(r=>setTimeout(r,ms));
+const variants=[['我认识到，心理健康意味着能够觉察情绪并积极面对生活。','通过这学期的学习，我认识到心理健康不是没有烦恼，而是能够觉察情绪、调节压力，并积极面对生活。','通过这学期的学习，我对心理健康有了更完整的理解。它不意味着永远积极、没有烦恼，而是能够看见自己的情绪和需求，在压力中保持自我调节，也能在必要时主动求助。'],['大学生的压力主要来自学业、人际关系和未来规划。','大学生需要面对学业竞争、独立生活、人际关系以及未来就业的不确定性，这些都可能带来焦虑和自我怀疑。','进入大学后，学习方式、生活环境和人际关系都发生了变化。除了课业竞争和考试压力，我们还要学会独立生活、处理社交关系，并面对专业选择、就业和未来发展的不确定性。'],['情绪管理让我明白，负面情绪也是内心的信号。','情绪管理部分让我感触最深。负面情绪并不是坏事，它更像是内心发出的信号，提醒我们关注真实需求。','课程中关于情绪管理的内容让我感触最深。过去我常常希望尽快摆脱焦虑和低落，但这门课让我明白，负面情绪是内心发出的信号。先承认和理解情绪，才能找到压力来源和合适的调节方式。'],['今后我会规律作息、保持运动，并学会倾诉和求助。','今后我会保持规律作息和运动，学会倾诉与求助，用更理性、宽容的态度对待自己。','今后我会把课程中学到的方法运用到日常生活中：保持规律作息和适度运动，用记录和倾诉梳理情绪，将复杂任务拆分成小目标。当自我调节无法缓解压力时，也会主动寻求帮助。']];
+const defaultLong=['通过这学期的学习，我对心理健康有了更完整的理解。心理健康并不意味着永远积极、没有烦恼，而是能够觉察自己的情绪与真实需求，在压力出现时找到合适的调节方式，并在必要时主动向他人求助。这门课也让我开始用更包容的眼光看待自己和身边的人。','进入大学后，学习方式、生活环境和人际关系都发生了明显变化。除了课程任务、考试和成绩带来的压力，我们还需要适应独立生活、建立新的关系，并面对专业选择、就业方向和未来发展的不确定性。这些压力相互叠加时，很容易引发焦虑、疲惫和自我怀疑。','课程中关于情绪管理的内容让我感触最深。过去我常常希望尽快摆脱焦虑和低落，但现在我明白，负面情绪并不是坏事，而是内心发出的信号，提醒我们关注尚未被满足的需要。先接纳和理解情绪，再寻找压力来源，往往比单纯压抑感受更有效。','今后我会把课程中学到的方法真正运用到日常生活中。我会保持规律作息和适度运动，通过记录与倾诉梳理情绪，把复杂任务拆分成容易完成的小目标；当自我调节无法缓解压力时，也会主动向老师、同学或专业机构寻求帮助，以更稳定的状态面对学习与生活。'];
+const expansionTails=[['我也开始理解，稳定的心理状态并非天生，而是在一次次觉察和调整中逐渐建立的。','面对具体问题时，我会先辨认情绪，再选择沟通、休息或求助，而不是一味压抑自己。','课程还让我意识到，心理健康与学习效率、人际关系和生活满意度密切相关。','只有尊重自己的真实感受，才能以更从容、更有弹性的状态面对大学生活。'],['这些压力往往会相互叠加，让人产生疲惫、焦虑甚至否定自己的感受。','因此，及时识别压力来源、合理安排任务并建立支持关系，对大学生活十分重要。','当压力超过承受范围时，睡眠、注意力和情绪都会受到影响，也可能让我们回避原本能够解决的问题。','如果能够把目标拆解、主动沟通并及时寻求专业帮助，许多压力就能重新变得可理解、可处理。'],['这种看法让我不再急着否定自己的感受，而是愿意停下来理解情绪背后的原因。','当我能够接纳情绪时，也更容易用运动、倾诉和调整目标等方式恢复平衡。','我开始尝试记录情绪发生的情境、身体反应和内心想法，从中找到反复出现的压力模式。','这种觉察让我知道，调节情绪不是强迫自己乐观，而是用更合适的方法回应真实需要。'],['同时，我会给自己保留休息和反思的空间，避免长期处于紧绷状态。','我也希望更敏锐地关注身边同学的情绪，在需要时给予理解、陪伴和支持。','在学习安排上，我会设置更现实的小目标，完成后及时复盘，而不是只用最终成绩评价自己。','我相信持续练习这些方法，能够让我建立更稳定的内在节奏，并以更健康的状态面对未来。']];
+const continuation=['在这个过程中，我会留意自己的身体反应和情绪变化，把模糊的压力转化为可以理解的问题。','当目标变得清晰之后，我会把任务拆成更小的步骤，并为休息和调整预留必要的空间。','我也会主动和同学、老师或家人沟通，从不同角度理解处境，而不是独自承担所有压力。','如果普通的调节方式仍然无法缓解困扰，我会及时寻求学校心理中心等专业支持。','每一次记录、复盘和尝试，都会让我更了解自己的节奏，也更有能力面对下一次变化。','这些方法并不是一次性的答案，而是需要在日常学习和生活中持续练习的心理能力。'];
+const rewriteOptions=[['这门课让我第一次认真观察自己的心理状态，也让我明白，真正的健康是能够理解情绪，并在变化中找到适合自己的平衡。','比起记住理论，我更重要的收获是学会看见自己：情绪出现时不急着否定，而是先理解它正在提醒我什么。','心理健康教育像是一份关于自我的使用说明，它让我知道压力并不可怕，关键是如何识别、回应并及时获得支持。','回顾这门课程，我感受到的不是一套标准答案，而是一种更温和地理解自己、也理解他人的新视角。'],['大学生活的挑战并不只来自成绩，还来自身份变化、关系建立和未来选择；这些不确定性共同构成了真实的成长压力。','很多焦虑表面上与考试有关，背后却可能是对自我价值、人际归属和未来方向的担心，这让我开始重新理解大学生的压力。','从独立生活到职业规划，大学生几乎同时面对多条成长任务，压力也常常在这些任务相互叠加时被放大。','我逐渐发现，压力并非单一问题，而是学习节奏、社交关系、自我期待和未来想象共同作用的结果。'],['最触动我的不是如何消除负面情绪，而是课程告诉我：情绪本身没有对错，它首先需要被听见和理解。','情绪管理让我意识到，焦虑和低落并不是软弱的证明，而是身体和内心正在请求我们停下来调整。','过去我总想尽快摆脱不舒服的感受，现在我更愿意把情绪当作线索，顺着它找到真正的压力来源。','课程中关于情绪觉察的内容改变了我的看法：调节并非压制，而是在接纳之后做出更合适的选择。'],['今后我希望把心理调节变成日常习惯，通过规律作息、运动、记录和沟通，让自己在压力积累前就有机会恢复。','面对困难时，我会先把问题拆小、允许自己休息，并主动寻找支持，而不是等到无法承受时才开始处理。','我准备建立一套适合自己的心理健康清单，持续观察睡眠、情绪和压力，并在需要时及时求助。','未来我会用更有弹性的标准看待成长，既认真完成目标，也允许波动、调整与暂时的不完美。']];
+const requirementTexts=['1. 对课程内容的理解和整体感受','2. 大学生可能面临的压力有哪些','3. 对课程哪部分的触动最深','4. 今后如何做'],essayLabels=['课程理解：','大学压力：','最深触动：','今后行动：'];
+const formatInstructions=['把所有标题加粗放大 2 个字号。','所有字号都放大 2 个。','把格式改成规范的作业格式。'];
+let mode=1,dragging=false,startIndex=0,holdTimer=0,epoch=0,selected=[],generating=false,selectionLocked=false,pinchDrag=null,pinchCompleted=false,rewriteReady=false,answerIndex=0,swipeDrag=null,formatCommand=0,selectionRange=null,anchorPoint=null,dragStart=null,selectedText='',wordUrl='',rewriteTargets=[],scaleTargets=[];
+function restartMotion(el,name){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;el.classList.remove(name);void el.offsetWidth;el.classList.add(name)}
+function units(){if(mode===1)return[noteLayer.querySelector('.note-title'),...requirements.querySelectorAll('.select-unit')];if(mode===4)return[noteLayer.querySelector('.note-title'),...essay.querySelectorAll('.select-unit')];return[...essay.querySelectorAll('.select-unit')]}
+function paint(end){const list=units(),a=Math.min(startIndex,end),b=Math.max(startIndex,end);list.forEach((x,i)=>x.classList.toggle('selected',i>=a&&i<=b));selected=list.filter(x=>x.classList.contains('selected'))}
+function indexAtY(y){const list=units();if(y<=list[0].getBoundingClientRect().top)return 0;for(let i=0;i<list.length;i++){const r=list[i].getBoundingClientRect();if(y<=(r.top+r.bottom)/2)return i}return list.length-1}
+function caretAt(x,y){if(document.caretPositionFromPoint){const p=document.caretPositionFromPoint(x,y);return p?{node:p.offsetNode,offset:p.offset}:null}if(document.caretRangeFromPoint){const r=document.caretRangeFromPoint(x,y);return r?{node:r.startContainer,offset:r.startOffset}:null}return null}
+function sentenceAt(point){const node=point.node;if(!node||node.nodeType!==3){const r=document.createRange();r.selectNodeContents(node);return r}const text=node.textContent,startMarks='。！？!?\n',endMarks='。！？!?\n';let start=point.offset,end=point.offset;while(start>0&&!startMarks.includes(text[start-1]))start--;while(end<text.length&&!endMarks.includes(text[end]))end++;if(end<text.length)end++;const r=document.createRange();r.setStart(node,start);r.setEnd(node,end);return r}
+function rangeBetween(a,b){const r=document.createRange();try{r.setStart(a.node,a.offset);r.setEnd(b.node,b.offset);if(r.collapsed&&!(a.node===b.node&&a.offset===b.offset)){r.setStart(b.node,b.offset);r.setEnd(a.node,a.offset)}}catch{return sentenceAt(a)}return r}
+function showRange(r){selectionRange=r.cloneRange();selectedText=r.toString();selected=units().filter(u=>{try{return r.intersectsNode(u)}catch{return false}});document.querySelectorAll('.select-unit').forEach(x=>x.classList.remove('selected'));if(window.CSS&&CSS.highlights&&window.Highlight){CSS.highlights.set('ai-selection',new Highlight(r))}else selected.forEach(x=>x.classList.add('selected'))}
+function highlightSelectedUnits(){if(!selected.length)return;const r=document.createRange();r.setStartBefore(selected[0]);r.setEndAfter(selected[selected.length-1]);showRange(r)}
+function clearSelectionVisual(){if(window.CSS&&CSS.highlights)CSS.highlights.delete('ai-selection');document.querySelectorAll('.select-unit').forEach(x=>x.classList.remove('selected'));selectionRange=null;selectedText=''}
+function materializeSelection(){if(!selectionRange)return[];const nodes=[];selected.forEach(unit=>{const root=mode===2||mode===3?unit.querySelector('.copy'):unit;if(!root)return;const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);while(walker.nextNode()){const node=walker.currentNode;try{if(selectionRange.intersectsNode(node))nodes.push(node)}catch{}}});const spans=[];nodes.reverse().forEach(node=>{let start=node===selectionRange.startContainer?selectionRange.startOffset:0,end=node===selectionRange.endContainer?selectionRange.endOffset:node.length;if(end<=start)return;let middle=node;if(end<node.length)middle.splitText(end);if(start>0)middle=middle.splitText(start);const span=document.createElement('span');span.className='selection-fragment';span.dataset.p=middle.parentElement.closest('[data-p]')?.dataset.p??'';middle.parentNode.replaceChild(span,middle);span.appendChild(middle);spans.push(span)});clearSelectionVisual();return spans.reverse()}
+function unwrapTargets(targets){targets.forEach(span=>{if(!span.isConnected)return;const parent=span.parentNode;span.replaceWith(...span.childNodes);parent.normalize()})}
+function pointAt(e){const r=noteLayer.getBoundingClientRect();touchIndicator.style.left=(e.clientX-r.left)+'px';touchIndicator.style.top=(e.clientY-r.top)+'px';touchIndicator.classList.add('show')}
+function hidePoint(){if(!generating)touchIndicator.classList.remove('show','holding')}
+async function generate(){const run=epoch,chosen=[...selected],title=noteLayer.querySelector('.note-title'),reqs=[...requirements.querySelectorAll('.requirement')],chosenIndexes=reqs.map((p,i)=>chosen.includes(p)?i:-1).filter(i=>i>=0),full=chosen.includes(title)||chosenIndexes.length===reqs.length;generating=true;dragging=false;touchIndicator.classList.add('holding');voice.classList.add('show');voice.classList.remove('processing');voiceState.textContent='正在聆听';voiceText.textContent='';for(let i=1;i<=instruction.length;i++){if(run!==epoch)return;voiceText.textContent=instruction.slice(0,i);await wait(68)}voice.classList.add('processing');voiceState.textContent=full?'正在生成完整的四段心得':'正在生成选中的 '+chosenIndexes.length+' 项内容';await wait(750);if(run!==epoch)return;clearSelectionVisual();if(full){essay.querySelectorAll('[data-p]').forEach(p=>p.querySelector('.copy').textContent=defaultLong[+p.dataset.p]);noteLayer.classList.add('result');restartMotion(noteLayer,'content-enter')}else{chosenIndexes.forEach(i=>{reqs[i].innerHTML='<span class="essay-label">'+essayLabels[i]+'</span><span>'+defaultLong[i]+'</span>';reqs[i].classList.add('generated-partial')})}await wait(600);voice.classList.remove('show');generating=false;hidePoint()}
+function restoreRequirements(){[...requirements.querySelectorAll('.requirement')].forEach((p,i)=>{p.textContent=requirementTexts[i];p.classList.remove('generated-partial')})}
+async function generateRewrite(){const run=epoch;generating=true;dragging=false;touchIndicator.classList.add('holding');voice.classList.add('show');voice.classList.remove('processing');voiceState.textContent='正在聆听';voiceText.textContent='';for(let i=1;i<=rewriteInstruction.length;i++){if(run!==epoch)return;voiceText.textContent=rewriteInstruction.slice(0,i);await wait(68)}voice.classList.add('processing');voiceState.textContent='正在换一个角度改写';await wait(720);if(run!==epoch)return;rewriteTargets=materializeSelection();if(!rewriteTargets.length){generating=false;voice.classList.remove('show');return}answerIndex=0;applyAnswer(0,1);selectionLocked=true;rewriteReady=true;showAnswerIndicator();await wait(480);voice.classList.remove('show');generating=false;hidePoint()}
+async function generateFormat(){const run=epoch,text=formatInstructions[formatCommand];generating=true;dragging=false;touchIndicator.classList.add('holding');voice.classList.add('show');voice.classList.remove('processing');voiceState.textContent='正在聆听';voiceText.textContent='';for(let i=1;i<=text.length;i++){if(run!==epoch)return;voiceText.textContent=text.slice(0,i);await wait(68)}voice.classList.add('processing');voiceState.textContent='正在应用全文样式';await wait(650);if(run!==epoch)return;clearSelectionVisual();noteLayer.classList.toggle('format-headings',formatCommand===0);noteLayer.classList.toggle('format-all-large',formatCommand===1);noteLayer.classList.toggle('assignment-format',formatCommand===2);restartMotion(noteLayer,'format-applied');if(formatCommand===2){applyAssignmentLabels();createWordFile()}else{$('#wordFile').classList.remove('show')}await wait(420);voice.classList.remove('show');generating=false;selected=[];hidePoint()}
+function arm(){clearTimeout(holdTimer);if(mode===1)holdTimer=setTimeout(()=>{if(dragging&&selected.length)generate()},620);if(mode===2&&!rewriteReady)holdTimer=setTimeout(()=>{if(dragging&&selected.length)generateRewrite()},620);if(mode===4)holdTimer=setTimeout(()=>{if(dragging&&selected.length)generateFormat()},620)}
+noteLayer.addEventListener('pointerdown',e=>{const unit=e.target.closest('.select-unit');if(mode===2&&rewriteReady){e.preventDefault();if(unit&&selected.includes(unit)){swipeDrag={startX:e.clientX,lastX:e.clientX};try{noteLayer.setPointerCapture(e.pointerId)}catch{}}else if(!unit)commitRewrite();return}if(mode===3&&selectionLocked){e.preventDefault();if(unit&&selected.includes(unit)){startPinch(e);try{noteLayer.setPointerCapture(e.pointerId)}catch{}return}if(!pinchCompleted)return;commitSelection();if(!unit)return}if(!unit)return;e.preventDefault();const point=caretAt(e.clientX,e.clientY);if(!point)return;dragging=true;anchorPoint=point;dragStart={x:e.clientX,y:e.clientY};showRange(sentenceAt(point));pointAt(e);arm();try{noteLayer.setPointerCapture(e.pointerId)}catch{}});
+noteLayer.addEventListener('pointermove',e=>{if(swipeDrag){swipeDrag.lastX=e.clientX;return}if(pinchDrag){movePinch(e);return}if(!dragging)return;pointAt(e);if(Math.hypot(e.clientX-dragStart.x,e.clientY-dragStart.y)>4){const point=caretAt(e.clientX,e.clientY);if(point)showRange(rangeBetween(anchorPoint,point))}arm()});
+noteLayer.addEventListener('pointerup',()=>{if(swipeDrag){endSwipe();return}if(pinchDrag){endPinch();return}dragging=false;clearTimeout(holdTimer);if(mode===3&&selected.length){scaleTargets=materializeSelection();if(scaleTargets.length){selectionLocked=true;pinchCompleted=false;preparePinch()}}else setTimeout(hidePoint,180)});
+noteLayer.addEventListener('pointercancel',()=>{dragging=false;pinchDrag=null;swipeDrag=null;clearTimeout(holdTimer);hidePoint()});
+function applyAnswer(index,direction){rewriteTargets.forEach(span=>{const i=+span.dataset.p;span.textContent=rewriteOptions[i][index]+expansionTails[i][index%expansionTails[i].length];span.style.setProperty('--slide-from',(direction<0?'-1.2em':'1.2em'));span.classList.remove('rewrite-changing');void span.offsetWidth;span.classList.add('rewrite-changing')});answerCount.textContent=(index+1)+' / 4';showAnswerIndicator()}
+function showAnswerIndicator(){if(!rewriteTargets.length)return;const m=metrics(rewriteTargets),top=m.r.bottom-m.n.top+noteLayer.scrollTop+8,left=Math.min(m.n.width-82,m.r.right-m.n.left-58);answerIndicator.style.top=top+'px';answerIndicator.style.left=Math.max(12,left)+'px';answerIndicator.classList.add('show')}
+function endSwipe(){const dx=swipeDrag.lastX-swipeDrag.startX;if(Math.abs(dx)>34){answerIndex=(answerIndex+(dx<0?1:3))%4;applyAnswer(answerIndex,dx)}swipeDrag=null}
+function commitRewrite(){rewriteReady=false;selectionLocked=false;swipeDrag=null;clearSelectionVisual();unwrapTargets(rewriteTargets);rewriteTargets=[];selected=[];answerIndicator.classList.remove('show');const badge=$('.result-note'),old=badge.textContent;badge.textContent='已保存，可继续选择其他内容';setTimeout(()=>{if(!rewriteReady)badge.textContent=old},1000)}
+function positionScale(){const a=parseFloat(topHandle.style.top)||0,b=parseFloat(bottomHandle.style.top)||0;pinchLine.style.top=(a+14)+'px';pinchLine.style.height=Math.max(8,b-a)+'px';densityIndicator.style.top=((a+b)/2)+'px'}
+function sourceFor(idx,minChars){let text=variants[idx][2]+expansionTails[idx].join(''),round=0;while(text.length<minChars){text+=continuation[(round+idx)%continuation.length];round++}return text}
+function metrics(elements=selected){const first=elements[0],last=elements[elements.length-1],n=noteLayer.getBoundingClientRect(),a=first.getBoundingClientRect(),b=last.getBoundingClientRect(),line=parseFloat(getComputedStyle(first.closest('[data-p]')||first).lineHeight),r={top:a.top,bottom:b.bottom,left:Math.min(...elements.map(p=>p.getBoundingClientRect().left)),right:Math.max(...elements.map(p=>p.getBoundingClientRect().right)),height:b.bottom-a.top},scroll=noteLayer.scrollTop;return{p:first,n,r,line,top:r.top-n.top+scroll+line/2,bottom:r.bottom-n.top+scroll-line/2}}
+function placeHandles(x){topHandle.style.right='auto';bottomHandle.style.right='auto';topHandle.style.left=x+'px';bottomHandle.style.left=x+'px';pinchLine.style.right='auto';pinchLine.style.left=(x+parseFloat(getComputedStyle(topHandle).width)/2)+'px';densityIndicator.style.right='auto';densityIndicator.style.left=Math.min(noteLayer.clientWidth-65,x+34)+'px'}
+function preparePinch(){const m=metrics(scaleTargets),x=Math.min(m.n.width-46,m.r.right-m.n.left-18);touchIndicator.classList.remove('show','holding');scalePanel.style.display='block';placeHandles(x);topHandle.style.top=m.top+'px';bottomHandle.style.top=m.bottom+'px';densityIndicator.textContent=Math.max(1,Math.round(m.r.height/m.line))+' 行';positionScale()}
+function startPinch(e){const m=metrics(scaleTargets),x=Math.max(18,Math.min(m.n.width-32,e.clientX-m.n.left)),contentHeight=scaleTargets.reduce((sum,span)=>sum+span.getBoundingClientRect().height,0);pinchDrag={fixedTop:m.top,startY:e.clientY,startBottom:m.bottom,line:m.line,fixedGap:Math.max(0,m.r.height-contentHeight),lastChoice:-1};touchIndicator.classList.remove('show','holding');placeHandles(x);topHandle.style.top=m.top+'px';topHandle.classList.add('active');bottomHandle.classList.add('active');movePinch(e)}
+function fitFragment(span,targetHeight){const idx=+span.dataset.p,line=parseFloat(getComputedStyle(span.closest('[data-p]')).lineHeight),source=targetHeight<=line*1.35?variants[idx][0]:sourceFor(idx,Math.ceil(targetHeight/line)*28);let low=1,high=source.length,best=1;while(low<=high){const mid=(low+high)>>1;span.textContent=source.slice(0,mid)+'。';if(span.getBoundingClientRect().height<=targetHeight+line*.35){best=mid;low=mid+1}else high=mid-1}let cut=best,boundary=Math.max(source.lastIndexOf('，',best),source.lastIndexOf('；',best),source.lastIndexOf('。',best));if(boundary>best*.82)cut=boundary;span.textContent=source.slice(0,cut).replace(/[，；。]+$/,'')+'。'}
+function fitToDistance(distance){const line=pinchDrag.line,targetHeight=Math.max(line,distance+line),contentHeight=Math.max(scaleTargets.length*line,targetHeight-pinchDrag.fixedGap),targetLines=Math.max(scaleTargets.length,Math.round(contentHeight/line)),baseLines=Math.floor(targetLines/scaleTargets.length),extraLines=targetLines%scaleTargets.length;scaleTargets.forEach((span,i)=>fitFragment(span,(baseLines+(i<extraLines?1:0))*line));const m=metrics(scaleTargets),lines=Math.max(1,Math.round(m.r.height/m.line));densityIndicator.textContent=lines+' 行';bottomHandle.style.top=m.bottom+'px';positionScale();if(lines!==pinchDrag.lastChoice){pinchDrag.lastChoice=lines;scaleTargets.forEach(span=>{span.classList.remove('semantic-changing');void span.offsetWidth;span.classList.add('semantic-changing')})}}
+function movePinch(e){const desiredBottom=Math.max(pinchDrag.fixedTop,pinchDrag.startBottom+e.clientY-pinchDrag.startY);topHandle.style.top=pinchDrag.fixedTop+'px';fitToDistance(desiredBottom-pinchDrag.fixedTop)}
+function endPinch(){topHandle.classList.remove('active');bottomHandle.classList.remove('active');pinchDrag=null;pinchCompleted=true;$('.scale-help').textContent='已完成 · 点击空白处保存并继续'}
+function commitSelection(){selectionLocked=false;pinchCompleted=false;pinchDrag=null;clearSelectionVisual();unwrapTargets(scaleTargets);scaleTargets=[];selected=[];scalePanel.style.display='none';$('.scale-help').textContent='上指固定首行 · 下指距离对应正文行数';const badge=$('.result-note'),old=badge.textContent;badge.textContent='已保存，可继续选择下一段';setTimeout(()=>{if(!selectionLocked)badge.textContent=old},1100)}
+function resetEssayLabels(){essay.querySelectorAll('[data-p]').forEach((p,i)=>p.querySelector('.essay-label').textContent=essayLabels[i])}
+function applyAssignmentLabels(){const labels=['一、课程理解','二、大学压力','三、最深触动','四、今后行动'];essay.querySelectorAll('[data-p]').forEach((p,i)=>p.querySelector('.essay-label').textContent=labels[i])}
+function createWordFile(){if(wordUrl)URL.revokeObjectURL(wordUrl);const body=[...essay.querySelectorAll('[data-p]')].map((p,i)=>'<h2>'+['一、课程理解','二、大学压力','三、最深触动','四、今后行动'][i]+'</h2><p>'+p.querySelector('.copy').textContent+'</p>').join('');const html='<html><head><meta charset="utf-8"><style>body{font-family:宋体;font-size:14pt;line-height:1.8;margin:2.54cm}h1{text-align:center;font-size:22pt}h2{font-size:16pt;margin-top:20pt}p{text-indent:2em}</style></head><body><h1>大学生心理健康教育课程心得体会</h1>'+body+'</body></html>';wordUrl=URL.createObjectURL(new Blob(['\ufeff',html],{type:'application/msword'}));const file=$('#wordFile');file.href=wordUrl;file.classList.add('show')}
+const demo1Steps='<li><i>1</i><div><b>选中标题、单项或多项要求</b><span>选中几项，就只生成对应的几段</span></div></li><li><i>2</i><div><b>停住不松手</b><span>触点扩散时自动进入语音输入</span></div></li><li><i>3</i><div><b>标题或全部要求代表全文</b><span>仅这两种选区会一次生成完整四段</span></div></li>';
+const demo2Steps='<li><i>1</i><div><b>选中任意内容并继续按住</b><span>说“这段内容写得不太好，换个角度写”</span></div></li><li><i>2</i><div><b>在光影选区上左右滑动</b><span>切换 4 个不同角度的改写答案</span></div></li><li><i>3</i><div><b>点击空白处保存</b><span>确认当前答案后可继续选择其他位置</span></div></li>';
+const demo3Steps='<li><i>1</i><div><b>自由拖选一个或多个段落</b><span>可跨段选择，松手后才锁定选区</span></div></li><li><i>2</i><div><b>在选区内再次按住拖动</b><span>锁定期间只调节长短，不会误选段落</span></div></li><li><i>3</i><div><b>点击空白处保存</b><span>解除锁定后可继续选择下一组内容</span></div></li>';
+const demo4Steps='<li><i>1</i><div><b>选择本轮语音指令</b><span>三个选项分别演示标题、字号与作业格式</span></div></li><li><i>2</i><div><b>选中标题或全部段落</b><span>保持按住后自动开始语音输入</span></div></li><li><i>3</i><div><b>一次应用全文样式</b><span>执行后选区光影消失，直接呈现结果</span></div></li>';
+function resetDemoState(){clearTimeout(holdTimer);unwrapTargets(rewriteTargets);unwrapTargets(scaleTargets);dragging=false;selected=[];rewriteTargets=[];scaleTargets=[];generating=false;selectionLocked=false;pinchDrag=null;pinchCompleted=false;rewriteReady=false;answerIndex=0;swipeDrag=null;selectionRange=null;selectedText='';anchorPoint=null;dragStart=null;formatCommand=0;clearSelectionVisual();voice.classList.remove('show','processing');voiceText.textContent='';voiceState.textContent='正在聆听';touchIndicator.classList.remove('show','holding');touchIndicator.removeAttribute('style');answerIndicator.classList.remove('show');answerIndicator.removeAttribute('style');answerCount.textContent='1 / 4';topHandle.classList.remove('active');bottomHandle.classList.remove('active');scalePanel.style.display='none';densityIndicator.textContent='标准';document.querySelectorAll('[data-format]').forEach((button,index)=>button.classList.toggle('active',index===0))}
+function setMode(next){epoch++;resetDemoState();mode=next;restoreRequirements();resetEssayLabels();$('.result-note').textContent='已根据 4 项作业要求生成';$('#wordFile').classList.remove('show');if(wordUrl){URL.revokeObjectURL(wordUrl);wordUrl=''}noteLayer.className='note-layer'+(next>1?' result':'')+(next===3?' mode2':'')+(next===4?' mode4':'');restartMotion(noteLayer,'mode-enter');formatCommands.classList.toggle('show',next===4);noteLayer.scrollTop=0;$('.scale-help').textContent='上指固定首行 · 下指距离对应正文行数';essay.querySelectorAll('[data-p]').forEach(p=>p.querySelector('.copy').textContent=defaultLong[+p.dataset.p]);document.querySelectorAll('.feature').forEach(x=>x.classList.toggle('active',+x.dataset.mode===next));if(next===1){$('#helpTitle').textContent='长按选句，拖动精确划词';$('#helpIntro').textContent='长按默认选择当前最短完整句；拖动时则严格按照起点与终点选择文字。';$('#steps').innerHTML=demo1Steps}else if(next===2){$('#helpTitle').textContent='选多少，就只改写多少';$('#helpIntro').textContent='选区是默认执行边界；生成答案只替换光影覆盖的文字，段落其余内容保持不变。';$('#steps').innerHTML=demo2Steps}else if(next===3){$('#helpTitle').textContent='只调节选中的文字片段';$('#helpIntro').textContent='双指展开与收拢只改变选区内容，不再替换选区所在的整段文字。';$('#steps').innerHTML=demo3Steps}else{$('#helpTitle').textContent='选中对象，直接说出样式诉求';$('#helpIntro').textContent='选择小标题可统一放大标题；涉及全文的字号和作业格式指令，在正文任意位置都可触发。';$('#steps').innerHTML=demo4Steps}}
+document.querySelectorAll('.feature').forEach(x=>x.onclick=()=>setMode(+x.dataset.mode));document.querySelectorAll('[data-format]').forEach(x=>x.onclick=()=>{formatCommand=+x.dataset.format;document.querySelectorAll('[data-format]').forEach(b=>b.classList.toggle('active',b===x))});$('#reset').onclick=()=>setMode(mode);setMode(1);
+</script>
+</body>
+</html>

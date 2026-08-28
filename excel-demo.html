@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>系统语音触屏交互原型 · 表格语音处理</title>
+<style>
+  *{box-sizing:border-box}
+  :root{--shell:#eeede9;--ink:#20201e;--muted:#74736e;--accent:#ef744c;--paper:#f8f7f3}
+  html,body{margin:0;width:100%;min-height:100%;background:var(--shell);font-family:"PingFang SC","Helvetica Neue",sans-serif;color:var(--ink)}
+  body{overflow:hidden}
+  .lab{height:100vh;display:grid;grid-template-columns:240px minmax(560px,1fr) 280px;grid-template-rows:74px 1fr;gap:0}
+  .lab-head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid rgba(0,0,0,.09);background:rgba(248,247,243,.86)}
+  .lab-brand{display:flex;align-items:center;gap:13px}.lab-mark{width:34px;height:34px;border-radius:11px;background:#20201e;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:750}.lab-brand b{font-size:15px}.lab-brand small{display:block;color:#888780;margin-top:2px;font-size:11px}.lab-version{font-size:11px;color:#77756f;border:1px solid #d9d7d0;padding:7px 10px;border-radius:99px}
+  .feature-rail{padding:34px 22px;border-right:1px solid rgba(0,0,0,.08);background:#f5f4f0}.rail-kicker{font-size:10px;letter-spacing:.16em;color:#99968e;margin:0 0 18px}.feature-item{display:block;width:100%;text-align:left;font:inherit;color:inherit;border:1px solid #dedbd3;border-radius:16px;padding:16px 15px;background:rgba(255,255,255,.55);cursor:pointer;transition:.25s}.feature-item+.feature-item{margin-top:12px}.feature-item.active{background:#fff;border-color:#cac6bc;box-shadow:0 8px 25px rgba(39,34,25,.08);transform:translateX(3px)}.feature-item strong{display:block;font-size:14px;margin-bottom:8px}.feature-item p{font-size:11px;line-height:1.65;color:#77736b;margin:0}.feature-no{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:9px;background:#e5e2da;color:#69665f;font-size:11px;font-weight:800;margin-bottom:14px}.feature-item.active .feature-no{background:#f6d8c8;color:#9b472f}.feature-soon{margin-top:14px;border:1px dashed #d7d3ca;border-radius:14px;padding:14px;color:#aaa69e;font-size:11px}
+  .demo-wrap{position:relative;min-width:0;display:grid;place-items:center;padding:22px 22px 78px;overflow:hidden;background:radial-gradient(circle at 50% 45%,#fff 0,#eeede9 66%)}
+  .device-frame{position:relative;height:min(calc(100vh - 118px),760px);aspect-ratio:1276/1440;padding:8px;border-radius:22px;background:#1d1d1c;box-shadow:0 28px 65px rgba(38,32,23,.22)}
+  .stage{position:relative;width:100%;height:100%;border-radius:15px;overflow:hidden;background:#fff;touch-action:none;user-select:none;-webkit-user-select:none;container-type:size}
+  .screen{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+  .day2-cover{position:absolute;left:43.7%;top:32.42%;width:51.5%;height:8.72%;background:#fff;z-index:2}
+  .day2{position:absolute;left:43.8%;top:32.38%;width:50.7%;z-index:3;color:#080808;font-size:1.88cqw;line-height:1.7;letter-spacing:0}
+  .day2-title{height:1.84em;white-space:nowrap}
+  .line{position:relative;padding-left:1.55em;white-space:nowrap}
+  .line:before{content:"•";position:absolute;left:.47em;top:0;font-weight:700}
+  .target-line{cursor:text}
+  .phrase{position:relative;display:inline-block;isolation:isolate;cursor:text}
+  .phrase:after,.replacement:after{content:"";position:absolute;z-index:-1;left:-.18em;right:-.18em;bottom:-.05em;height:1.12em;border-radius:.35em;opacity:0;transform:scaleX(.05);transform-origin:left center;transition:opacity .25s,transform .48s cubic-bezier(.2,.75,.2,1),filter .25s}
+  .phrase.selecting,.phrase.selected{color:#253959}
+  .phrase.selecting:after,.phrase.selected:after{opacity:.92;transform:scaleX(1);background:linear-gradient(90deg,rgba(105,163,255,.5),rgba(107,228,231,.72) 30%,rgba(255,222,101,.76) 65%,rgba(255,151,187,.5));box-shadow:inset 0 0 0 1px rgba(81,120,255,.06)}
+  .phrase.listening:before{content:"";position:absolute;z-index:-2;left:-1.15em;right:-1.15em;top:-.72em;bottom:-.72em;border-radius:999px;background:linear-gradient(90deg,rgba(121,169,255,.28),rgba(94,233,234,.3),rgba(255,224,103,.27),rgba(255,142,187,.24));filter:blur(11px);opacity:.45;animation:auraSpread 1.15s ease-in-out infinite alternate}
+  .phrase.listening:after{opacity:.78;height:1.18em;filter:saturate(.82);background:linear-gradient(90deg,#79a9ff88,#5ee9eaaa,#ffe067bb,#ff8ebb88,#79a9ff88);background-size:220% 100%;animation:listen 1.15s linear infinite,breath .9s ease-in-out infinite alternate}
+  .phrase.listening{animation:textBreath .72s ease-in-out infinite alternate}
+  @keyframes listen{to{background-position:220% 0}}
+  @keyframes breath{to{filter:saturate(1.45);box-shadow:0 2px 11px rgba(86,205,226,.34)}}
+  @keyframes auraSpread{from{transform:scale(.88);opacity:.32;filter:blur(8px)}to{transform:scale(1.18);opacity:.62;filter:blur(15px)}}
+  @keyframes textBreath{to{transform:translateY(-.02em)}}
+  .replacement{position:relative;display:inline-block;cursor:ew-resize;color:#26364e;padding:0 .16em;margin:0 -.16em;border-radius:.3em;background:linear-gradient(90deg,rgba(109,171,255,.42),rgba(103,225,227,.5),rgba(255,222,107,.42),rgba(255,151,187,.28));-webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .replacement:after{display:none}
+  .replacement.changing{animation:swap .28s ease both}
+  .replacement.scaling{transition:transform .12s;transform:scale(var(--semantic-scale,1));transform-origin:left center}
+  .density-simple .replacement{font-weight:600}.density-detailed .target-line{white-space:normal;padding-right:1.2em;line-height:1.62}.density-detailed .replacement{display:inline;color:#26364e}.density-detailed .day2-cover{height:37.5%}.density-detailed .line:nth-child(3){margin-top:.14em}.semantic-pop{animation:semanticPop .42s cubic-bezier(.2,.8,.2,1)}@keyframes semanticPop{from{opacity:.3;filter:blur(4px);transform:scale(.97)}to{opacity:1;filter:none;transform:none}}
+  .continuation{display:none}.density-detailed .continuation{display:block}.cont-title{white-space:nowrap}.continuation .line{white-space:normal;padding-right:.5em;line-height:1.7}
+  @keyframes swap{50%{opacity:.15;transform:translateX(var(--slide,12px))}}
+  .voice-wave{position:absolute;left:50%;top:calc(100% + .15em);width:4.8em;height:.42em;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:.11em;opacity:0;pointer-events:none}
+  .listening .voice-wave{opacity:.9}
+  .voice-wave i{width:.11em;height:35%;border-radius:1em;background:#6edce0;animation:wave .62s ease-in-out infinite alternate}
+  .voice-wave i:nth-child(2),.voice-wave i:nth-child(6){animation-delay:-.18s;height:80%}.voice-wave i:nth-child(3),.voice-wave i:nth-child(5){animation-delay:-.38s;height:55%}.voice-wave i:nth-child(4){animation-delay:-.52s;height:100%}
+  @keyframes wave{to{height:100%;background:#ffb472}}
+  .swipe-zone{display:none;position:absolute;inset:-.35em -.2em;z-index:8;cursor:ew-resize}
+  .result .swipe-zone{display:block}
+  .tap-space{position:absolute;left:40.4%;top:9.5%;right:0;bottom:0;z-index:1}
+  .edited .tap-space{z-index:2}
+  .confirmed .replacement{cursor:text;background:transparent}
+  .confirmed .swipe-zone{display:none}
+  .touch-dot{position:absolute;z-index:70;left:0;top:0;width:34px;height:34px;margin:-17px;border-radius:50%;background:rgba(255,255,255,.8);border:1.5px solid rgba(70,65,59,.38);box-shadow:0 4px 12px rgba(0,0,0,.18),inset 0 0 0 7px rgba(255,255,255,.38);opacity:0;pointer-events:none}.touch-dot:after{content:"";position:absolute;inset:10px;border-radius:50%;background:#ed805f;box-shadow:0 0 0 3px rgba(237,128,95,.18)}.touch-dot.down{transform:scale(.78)}
+  .touch-dot.second:after{background:#5fbfd0;box-shadow:0 0 0 3px rgba(95,191,208,.18)}.pinch-line{position:absolute;z-index:19;height:2px;background:linear-gradient(90deg,#ed805f,#ffe067,#5fbfd0);transform-origin:left center;opacity:0;pointer-events:none;border-radius:9px}
+  .speech-caption{position:absolute;z-index:30;left:50%;bottom:18px;width:min(520px,calc(100% - 44px));transform:translate(-50%,14px);padding:12px 16px 13px;border:1px solid rgba(55,59,65,.12);border-radius:16px;background:rgba(30,31,34,.94);color:#fff;box-shadow:0 14px 34px rgba(30,28,24,.2);opacity:0;pointer-events:none;transition:.28s;backdrop-filter:blur(14px)}.speech-caption.show{opacity:1;transform:translate(-50%,0)}.speech-top{display:flex;align-items:center;gap:9px;color:#c9ccd1;font-size:10px;margin-bottom:6px}.speech-state{margin-left:auto;color:#8fe0e4}.speech-caption.processing .speech-state{color:#ffe28b}.speech-text{font-size:14px;line-height:1.45;min-height:1.45em}.mini-wave{height:16px;display:flex;align-items:center;gap:2px}.mini-wave i{display:block;width:2px;height:35%;border-radius:2px;background:#70d9e2;animation:miniWave .55s ease-in-out infinite alternate}.mini-wave i:nth-child(2),.mini-wave i:nth-child(6){height:80%;animation-delay:-.15s}.mini-wave i:nth-child(3),.mini-wave i:nth-child(5){height:55%;animation-delay:-.3s}.mini-wave i:nth-child(4){height:100%;animation-delay:-.42s}.speech-caption.processing .mini-wave i{animation:none;height:3px;background:#ffe28b}@keyframes miniWave{to{height:100%;background:#ff9ac1}}
+  .feature3-view{position:absolute;z-index:40;inset:0;display:none;background:#fff}.feature3 .feature3-view{display:grid;grid-template-columns:1fr 1fr}.feature3 .screen,.feature3 .tap-space,.feature3 .day2-cover,.feature3>.day2{display:none}.xhs-pane{position:relative;overflow:hidden;background:#17171e;border-right:1px solid #d6d6d6}.xhs-shot{width:100%;height:100%;display:block;object-fit:cover;object-position:top center;pointer-events:none}.xhs-target{position:absolute;left:4%;right:4%;top:9%;bottom:7%;border-radius:18px;touch-action:none}.f3-note{position:relative;padding:7.5% 7.5% 6%;overflow:hidden;background:#fff;color:#101010;font-size:1.55cqw;line-height:1.62}.f3-note h1{font-size:2.25cqw;margin:5% 0 2%;font-weight:750}.f3-meta{font-size:1.12cqw;color:#aaa;margin-bottom:7%}.f3-day{margin:.25em 0}.f3-day b{font-weight:500}.f3-bullet{position:relative;padding-left:1.35em}.f3-bullet:before{content:"•";position:absolute;left:.25em}.f3-insert{display:none}.f3-done .f3-insert{display:block;animation:insertCard .55s cubic-bezier(.2,.8,.2,1) both}.f3-newline{margin:.12em 0 .35em 1.35em;padding:.04em .16em;border-radius:.3em;color:#253959;background:linear-gradient(90deg,rgba(109,171,255,.44),rgba(103,225,227,.52),rgba(255,222,107,.46),rgba(255,151,187,.28));-webkit-box-decoration-break:clone;box-decoration-break:clone}.shop-card{display:grid;grid-template-columns:34% 1fr;gap:.72em;margin:.5em 0 .72em 1.35em;padding:.58em;border:1px solid #e5e2dd;border-radius:.8em;background:#fff;box-shadow:0 .5em 1.3em rgba(39,34,27,.12)}.shop-photo{min-height:4.8em;border-radius:.55em;background:url('./xiaohongshu-food.png') center 38%/cover}.shop-info{display:flex;flex-direction:column;justify-content:center}.shop-info strong{font-size:1.02em}.shop-info span{color:#777;font-size:.82em;line-height:1.45;margin-top:.35em}.f3-ink{position:absolute;z-index:46;inset:0;width:100%;height:100%;pointer-events:none}.f3-path{fill:none;stroke:url(#f3Gradient);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:url(#f3Glow)}.f3-source-halo{position:absolute;z-index:44;border-radius:42%;border:3px solid rgba(102,221,226,.78);box-shadow:0 0 15px rgba(255,214,96,.65),inset 0 0 18px rgba(255,137,188,.22);opacity:0;pointer-events:none}.f3-source-halo.show{opacity:1;animation:f3Pulse 1.2s ease-in-out infinite alternate}@keyframes f3Pulse{to{filter:hue-rotate(45deg);box-shadow:0 0 24px rgba(91,207,229,.8),inset 0 0 25px rgba(255,214,96,.25)}}@keyframes insertCard{from{opacity:0;transform:translateY(.65em);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}
+  .feature4-view{position:absolute;z-index:42;inset:0;display:none;background:#fbfbfa;color:#151515;overflow:hidden}.feature4 .feature4-view{display:block}.feature4 .screen,.feature4 .tap-space,.feature4 .day2-cover,.feature4>.day2{display:none}.f4-bar{height:7%;display:flex;align-items:center;justify-content:space-between;padding:0 4%;border-bottom:1px solid #eceae5;font-size:1.35cqw}.f4-bar b{font-size:1.55cqw}.f4-before{padding:3% 8%;font-size:1.65cqw;line-height:1.66;transition:.55s}.f4-before h1{font-size:2.7cqw;margin:1% 0}.f4-before .meta{font-size:1.2cqw;color:#aaa;margin-bottom:3%}.f4-before p{margin:.22em 0}.f4-result .f4-before{opacity:0;transform:scale(.98);pointer-events:none}.f4-suggestion{position:absolute;z-index:8;left:4%;top:22%;width:38%;padding:2.2%;border-radius:1.4cqw;background:#202124;color:#fff;box-shadow:0 2cqw 5cqw rgba(0,0,0,.28);opacity:0;transform:translateX(-30%) scale(.9);transition:.5s}.f4-suggestion.show{opacity:1;transform:none}.f4-suggest-head{display:flex;justify-content:space-between;color:#aeb1b8;font-size:1.05cqw}.f4-flight-mini{margin-top:1.4cqw;padding:1.35cqw;border-radius:1cqw;background:#fff;color:#171717}.f4-flight-mini strong{display:block;font-size:1.45cqw}.f4-flight-mini span{font-size:1.05cqw;color:#737373}.f4-plan{position:absolute;inset:7% 0 0;padding:2.4% 3.4% 3%;opacity:0;transform:translateY(2%);pointer-events:none;transition:.7s cubic-bezier(.2,.8,.2,1);font-size:1.17cqw}.f4-result .f4-plan{opacity:1;transform:none;pointer-events:auto}.f4-result .f4-suggestion{opacity:0;transform:translate(50%,15%) scale(.8)}.plan-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:1.4%}.plan-head h1{font-size:2.35cqw;margin:0}.plan-head p{font-size:1.05cqw;color:#85837d;margin:.25em 0 0}.plan-badge{padding:.55em .8em;border-radius:99px;background:#e8f6ef;color:#267452;font-size:1cqw}.plan-top{display:grid;grid-template-columns:1.25fr .75fr;gap:1.3%;margin-bottom:1.25%}.flight-card{border-radius:1.15cqw;padding:1.45cqw;background:linear-gradient(125deg,#202b43,#172033);color:#fff;box-shadow:0 .8cqw 2.2cqw rgba(31,41,60,.2)}.flight-title{display:flex;justify-content:space-between;font-size:1cqw;color:#bfc8da}.flight-route{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin:.8cqw 0}.airport strong{display:block;font-size:2.05cqw}.airport:last-child{text-align:right}.airport span{font-size:.95cqw;color:#bfc8da}.flight-line{text-align:center;color:#92b9ff;font-size:1cqw}.flight-line i{display:block;width:6.5cqw;height:1px;background:#789bd4;margin:.35em 0}.flight-meta{display:flex;justify-content:space-between;gap:.8em;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.13);padding-top:.75cqw;color:#d2d7e1;font-size:.92cqw}.route-card{border:1px solid #e6e2d8;border-radius:1.15cqw;padding:1.3cqw;background:#fff}.route-card b{font-size:1.15cqw}.route-track{margin-top:1.15cqw;display:flex;align-items:center;gap:.35cqw;flex-wrap:wrap}.route-track span{padding:.45em .62em;border-radius:99px;background:#f0eee8;font-size:.9cqw}.route-track i{font-style:normal;color:#b6b0a4}.days-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2%}.day-card{min-height:13cqw;padding:1.25cqw;border:1px solid #e7e4dc;border-radius:1.05cqw;background:#fff;box-shadow:0 .45cqw 1.2cqw rgba(42,38,30,.05);animation:dayReveal .5s both}.day-card:nth-child(2){animation-delay:.08s}.day-card:nth-child(3){animation-delay:.16s}.day-card:nth-child(4){animation-delay:.24s}.day-card:nth-child(5){animation-delay:.32s}.day-date{font-size:1cqw;color:#9b978e}.day-card h3{font-size:1.35cqw;margin:.4em 0}.day-card p{font-size:1.02cqw;line-height:1.45;color:#64615b;margin:.34em 0}.day-card em{display:block;margin-top:.55em;font-style:normal;font-size:.96cqw;color:#456c99}.day-dot{width:.6cqw;height:.6cqw;border-radius:50%;background:#65d0d5;display:inline-block;margin-right:.35em}@keyframes dayReveal{from{opacity:0;transform:translateY(1cqw)}to{opacity:1;transform:none}}
+  .feature4 .screen{display:block}.feature4 .feature4-view{left:40.15%;top:22.2%;right:0;bottom:0;display:block;background:#fff}.feature4 .tap-space,.feature4 .day2-cover,.feature4>.day2{display:none}.f4-note-before,.f4-note-plan{position:absolute;inset:0;padding:1.7% 6.7% 4%;font-size:1.48cqw;line-height:1.58;background:#fff;transition:.58s cubic-bezier(.2,.8,.2,1)}.f4-note-before p{margin:.16em 0}.f4-note-plan{opacity:0;transform:translateY(1.2%);pointer-events:none}.f4-result .f4-note-before{opacity:0;transform:translateY(-1%);pointer-events:none}.f4-result .f4-note-plan{opacity:1;transform:none;pointer-events:auto}.f4-overview{display:flex;align-items:center;gap:.7em;margin-bottom:.55em;color:#75736e;font-size:1.15cqw}.f4-overview span{padding:.32em .62em;border-radius:99px;background:#f3f2ed}.note-day{position:relative;padding:.48em 0 .5em;border-top:1px solid #eceae5}.note-day:first-of-type{border-top:0}.note-day h3{font-size:1.58cqw;margin:0 0 .12em}.note-day h3 small{font-size:.72em;color:#96938d;font-weight:400;margin-left:.45em}.note-row{display:flex;gap:.65em;margin:.09em 0}.note-time{flex:0 0 3.6em;color:#92908a;font-variant-numeric:tabular-nums}.note-copy{flex:1}.flight-inline{margin:.25em 0 .28em;padding:.42em .65em;border-left:3px solid #6e9fff;background:linear-gradient(90deg,#eef4ff,#f8fbff 72%,transparent);border-radius:0 .5em .5em 0;color:#2b4266}.flight-inline b{margin-right:.45em}.transit-inline{margin:.22em 0 0 4.25em;color:#47718e;font-size:.9em}.transit-inline:before{content:"公交";display:inline-block;margin-right:.55em;padding:.08em .42em;border-radius:99px;background:#e8f5f5;color:#31828b;font-size:.85em}.route-inline{margin:.3em 0 .55em;padding:.42em .7em;border-radius:.55em;background:#faf8ee;color:#77715c;font-size:1.12cqw}.f4-suggestion{left:5%;top:2%;width:68%;padding:.8em 1em;border-radius:.75em;background:#26272a}.f4-suggest-head{font-size:1.05cqw}.f4-flight-mini{display:flex;justify-content:space-between;align-items:center;gap:1em;margin-top:.5em;padding:.55em .7em;border-radius:.5em}.f4-flight-mini strong{font-size:1.15cqw}.f4-flight-mini span{font-size:.92cqw}.f4-result .f4-suggestion{opacity:0;transform:translateY(1em) scale(.96)}
+  .help{padding:34px 25px;border-left:1px solid rgba(0,0,0,.08);background:var(--paper)}.help-kicker{font-size:10px;letter-spacing:.15em;color:#a09c92}.help h2{font-size:20px;margin:12px 0 8px}.help-intro{font-size:12px;line-height:1.7;color:#76736b;margin:0 0 24px}.steps{list-style:none;margin:0;padding:0}.steps li{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:13px 0;border-top:1px solid #e3e0d8;font-size:12px;line-height:1.55}.steps i{font-style:normal;width:22px;height:22px;border-radius:50%;background:#e8e5dd;color:#6e6b64;display:grid;place-items:center;font-size:10px}.steps b{display:block;font-size:12px}.steps span{color:#89857d;font-size:11px}.demo-button{width:100%;margin-top:22px;border:0;border-radius:12px;padding:12px 14px;background:#242321;color:#fff;font:inherit;font-size:12px;cursor:pointer}.demo-button:disabled{opacity:.55}.gesture-key{display:flex;gap:12px;margin-top:18px;color:#8a867e;font-size:10px}.gesture-key span{display:flex;align-items:center;gap:5px}.dot-icon{width:14px;height:14px;border-radius:50%;border:1px solid #aaa;background:#fff;display:inline-block}.swipe-icon{width:22px;height:1px;background:#aaa;position:relative;display:inline-block}.swipe-icon:after{content:"›";position:absolute;right:-1px;top:-8px}
+  .feature-rail{padding-top:24px;overflow-y:auto}.feature-item{padding:12px 14px}.feature-item+.feature-item{margin-top:9px}.feature-no{margin-bottom:8px}.feature-item strong{margin-bottom:5px}.feature-item p{line-height:1.5}.feature-soon{margin-top:10px}
+  .feature5-view{position:absolute;z-index:45;inset:0;display:none;background:#fff;color:#202020;overflow:hidden}.feature5 .feature5-view{display:block}.feature5 .screen,.feature5 .tap-space,.feature5 .day2-cover,.feature5>.day2{display:none}.xl-titlebar{height:6.2%;display:flex;align-items:center;gap:2%;padding:0 2.4%;background:#217346;color:#fff;font-size:1.12cqw}.xl-titlebar strong{font-size:1.38cqw}.xl-titlebar .xl-file{margin:auto}.xl-ribbon{height:8.5%;padding:1% 2.4%;background:#f8faf9;border-bottom:1px solid #d7ddd9}.xl-tabs{display:flex;gap:2.3%;font-size:1cqw;color:#4d514e}.xl-tabs b{color:#217346;border-bottom:2px solid #217346;padding-bottom:.45em}.xl-tools{display:flex;gap:.6%;margin-top:.8%;height:2.1cqw}.xl-tools i{display:block;width:4.4%;border-radius:.35cqw;background:#e4e8e5}.xl-tools i:nth-child(3){width:9%}.xl-tools i:nth-child(5){width:7%}.xl-formula{height:4.8%;display:grid;grid-template-columns:10% 6% 1fr;align-items:center;border-bottom:1px solid #d9dcd9;font-size:1.02cqw}.xl-name{text-align:center;border-right:1px solid #d9dcd9}.xl-fx{text-align:center;color:#767b77;font-style:italic}.xl-formula-value{padding-left:1%;color:#333}.xl-workspace{height:77.3%;display:grid;grid-template-columns:59% 41%;background:#f3f5f3}.xl-grid-wrap{overflow:hidden;background:#fff;border-right:1px solid #cfd5d1}.xl-grid{height:100%;display:grid;grid-template-columns:4.4cqw 8.2cqw repeat(5,1fr);grid-template-rows:3.1cqw repeat(8,3.7cqw) 1fr;position:relative;touch-action:none}.xl-cell{display:flex;align-items:center;padding:0 .65cqw;border-right:1px solid #d8ded9;border-bottom:1px solid #d8ded9;font-size:1.08cqw;background:#fff;font-variant-numeric:tabular-nums}.xl-col,.xl-row{justify-content:center;padding:0;background:#eef1ef;color:#5e655f;font-size:.92cqw}.xl-head{font-weight:700;background:#f7f9f7}.xl-total{font-weight:700;background:#f0f7f2}.xl-selection{grid-column:3/7;grid-row:3/9;z-index:8;position:relative;border:2px solid #1e7044;background:rgba(47,158,93,.16);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45);opacity:0;transform:scale(.985);transition:.25s;pointer-events:none}.xl-selection.show{opacity:1;transform:none}.xl-selection:after{content:"";position:absolute;right:-4px;bottom:-4px;width:7px;height:7px;background:#176b3e;border:1px solid #fff}.xl-output{position:relative;padding:8% 7%;background:linear-gradient(135deg,#f8faf8,#eef3ef)}.xl-output-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#858c87;font-size:1.12cqw;line-height:1.65}.xl-output-empty b{display:block;color:#485049;font-size:1.45cqw}.xl-result{display:none;height:100%;animation:xlReveal .48s cubic-bezier(.2,.8,.2,1) both}.xl-result.show{display:block}.xl-result-label{font-size:.9cqw;color:#217346;letter-spacing:.08em}.xl-sum-card{margin-top:7%;padding:8%;border-radius:1.1cqw;background:#fff;border:1px solid #d9e2dc;box-shadow:0 .8cqw 2cqw rgba(33,74,48,.1)}.xl-sum-card span{font-size:1.08cqw;color:#69716b}.xl-sum-card strong{display:block;margin:.2em 0;font-size:4.1cqw;color:#1f7044}.xl-sum-card code{font-size:1cqw;color:#738078}.xl-pivot h3,.xl-chart h3{font-size:1.55cqw;margin:.6em 0}.xl-mini-table{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #cbd5ce;border-left:1px solid #cbd5ce;background:#fff}.xl-mini-table span{padding:.72em;border-right:1px solid #cbd5ce;border-bottom:1px solid #cbd5ce;font-size:1.02cqw}.xl-mini-table .ph{font-weight:700;background:#e8f2eb}.xl-chart-bars{height:20cqw;display:flex;align-items:flex-end;gap:6%;padding:7% 4% 12%;border-left:1px solid #9da69f;border-bottom:1px solid #9da69f;background:#fff}.xl-bar{position:relative;flex:1;height:var(--h);min-width:0;background:linear-gradient(#55a878,#217346);border-radius:.25cqw .25cqw 0 0;animation:barGrow .65s cubic-bezier(.2,.8,.2,1) both}.xl-bar:before{content:attr(data-v);position:absolute;left:50%;top:-1.5em;transform:translateX(-50%);font-size:.8cqw;color:#536057}.xl-bar:after{content:attr(data-m);position:absolute;left:50%;bottom:-2.2em;transform:translateX(-50%);font-size:.85cqw;color:#68716b;white-space:nowrap}.xl-status{position:absolute;left:0;right:0;bottom:0;height:3.2%;padding:.35% 2%;background:#eff2f0;border-top:1px solid #d7dcd8;font-size:.86cqw;color:#616862}.xl-status b{color:#217346;margin-left:1.2em}.excel-actions{display:none;margin-top:12px;grid-template-columns:1fr;gap:7px}.excel-actions.show{display:grid}.excel-command{border:1px solid #d9d6ce;border-radius:10px;padding:9px 10px;background:#fff;color:#34332f;text-align:left;font:inherit;font-size:11px;cursor:pointer}.excel-command:hover{border-color:#69a780;background:#f4faf6}.excel-command b{color:#217346;margin-right:.5em}@keyframes xlReveal{from{opacity:0;transform:translateY(1cqw);filter:blur(3px)}to{opacity:1;transform:none;filter:none}}@keyframes barGrow{from{height:0}}
+  /* Demo 5: a compact, directly editable spreadsheet rather than a result dashboard. */
+  .feature5 .xl-workspace{display:block;height:77.3%;background:#fff}.feature5 .xl-grid-wrap{height:100%;border:0;overflow:hidden}.feature5 .xl-grid{height:100%;display:grid;grid-template-columns:4.2cqw 11cqw repeat(7,1fr);grid-template-rows:3cqw repeat(14,3.45cqw);position:relative;align-content:start}.feature5 .xl-cell{position:relative;z-index:4;background:#fff;color:#242824;padding:0 .7cqw}.feature5 .xl-cell.xl-col,.feature5 .xl-cell.xl-row{background:#eef1ef;color:#626963}.feature5 .xl-cell.xl-head{background:#f5f7f5;font-weight:700}.feature5 .xl-cell.xl-selected{background:rgba(33,115,70,.11);color:#172019}.feature5 .xl-cell.xl-written{background:#eef8f1;color:#176b3e;font-weight:800;animation:xlCellWrite .38s ease both}.feature5 .xl-selection{position:absolute;z-index:6;display:block;grid-column:auto;grid-row:auto;border:2px solid #217346;background:transparent;box-shadow:none;opacity:0;transform:none;transition:none;pointer-events:none}.feature5 .xl-selection.show{opacity:1}.feature5 .xl-sheet-chart{position:absolute;z-index:12;right:2.2%;top:42%;width:40%;height:45%;padding:1.2cqw 1.35cqw 1.5cqw;background:#fff;border:1px solid #adb6b0;box-shadow:0 .8cqw 2.2cqw rgba(35,54,42,.16);animation:xlReveal .45s ease both}.feature5 .xl-sheet-chart h3{font-size:1.2cqw;margin:0 0 1.1cqw}.feature5 .xl-chart-bars{height:14cqw;padding:1.8cqw 1cqw 3cqw;gap:8%}.feature5 .xl-pivot-label{position:absolute;z-index:10;color:#217346;font-size:.88cqw;font-weight:700;letter-spacing:.04em}.feature5 .xl-status{height:3.2%}.feature5 .xl-output{display:none}.excel-actions.show{display:grid}.excel-command.selected{border-color:#217346;background:#edf7f0}.excel-hint{font-size:10px;line-height:1.55;color:#8a867e;margin-top:3px}@keyframes xlCellWrite{from{opacity:.2;transform:scale(.92)}to{opacity:1;transform:none}}
+  .reset-button{width:100%;margin-top:9px;border:1px solid #d8d4cb;border-radius:12px;padding:10px 14px;background:transparent;color:#5f5c55;font:inherit;font-size:11px;cursor:pointer}.reset-button:hover{background:#fff;border-color:#bdb8ad}.feature4 .feature4-view{top:13.5%}.feature4 .f4-note-before{font-size:1.66cqw;line-height:1.62;padding:2.2% 6.7% 4%;cursor:text}.f4-note-before h1{font-size:2.5cqw;line-height:1.25;margin:.1em 0 .65em;border-radius:.28em;transition:.18s}.f4-note-before p{border-radius:.35em;transition:.18s}.f4-note-before .f4-picked{color:#26364e;background:linear-gradient(90deg,rgba(109,171,255,.30),rgba(103,225,227,.35),rgba(255,222,107,.30),rgba(255,151,187,.18));box-shadow:0 0 0 2px rgba(81,120,255,.05)}
+  .feature6-view{position:absolute;z-index:46;left:40.15%;top:13.5%;right:0;bottom:0;display:none;background:#fff;overflow:auto;color:#151515}.feature6 .feature6-view{display:block}.feature6 .screen{display:block}.feature6 .tap-space,.feature6 .day2-cover,.feature6>.day2{display:none}.f6-note{padding:2.2% 6.7% 7%;font-size:1.22cqw;line-height:1.48;transition:.3s}.f6-note .f4-overview,.f6-note .route-inline,.f6-note .note-day>*{border-radius:.35em;transition:.2s}.f6-note .f6-picked{background:linear-gradient(90deg,rgba(109,171,255,.28),rgba(103,225,227,.34),rgba(255,222,107,.27),rgba(255,151,187,.16));box-shadow:0 0 0 2px rgba(81,120,255,.05)}.f6-note.format-headings .note-day h3{font-size:1.78cqw;font-weight:900;letter-spacing:.01em}.f6-note.format-larger{font-size:calc(1.22cqw + 2px);line-height:1.58}.f6-note.format-larger .note-day h3{font-size:calc(1.58cqw + 2px)}.place-address{display:none;margin:.24em 0 .38em 4.25em;padding:.28em .55em;border-left:3px solid #ef744c;background:#fff6f1;color:#7d4a38;font-size:.88em;border-radius:0 .45em .45em 0}.f6-note.show-addresses .place-address{display:block;animation:xlReveal .38s ease both}.place-pin{color:#c85a38;font-weight:750}.f6-note.show-addresses .place-name{padding:.05em .25em;border-radius:.3em;background:#ffe6d7;color:#743b2a}.format-action-status{margin-top:4px;color:#217346;font-size:10px}
+  .feature4 .f4-suggestion{display:none}.f4-result-title{font-size:2.35cqw;line-height:1.25;margin:.05em 0 .55em}.f4-overview .f4-source{background:#eef4ff;color:#4d6894}.f6-title{font-size:2.35cqw;line-height:1.25;margin:.1em 0 .75em;border-radius:.3em;transition:.2s}
+  @media(max-width:1050px){.lab{grid-template-columns:180px minmax(500px,1fr) 230px}.feature-rail,.help{padding:24px 16px}.device-frame{height:min(calc(100vh - 110px),680px)}}
+  .scene-tabs{display:flex;align-items:center;gap:8px;margin-left:auto;margin-right:18px}.scene-tab{display:flex;align-items:baseline;gap:7px;padding:8px 12px;border:1px solid #d9d7d0;border-radius:11px;color:#74716a;text-decoration:none;background:rgba(255,255,255,.45);font-size:11px;transition:.2s}.scene-tab b{font-size:12px;color:#4f4c46}.scene-tab.active{border-color:#b9cfc1;background:#fff;box-shadow:0 4px 14px rgba(39,34,25,.07)}.scene-tab.active b{color:#217346}.feature-soon{display:none}.feature-rail{display:flex;flex-direction:column}.feature-rail:before{content:"SCENE 2";font-size:10px;letter-spacing:.16em;color:#99968e;margin-bottom:16px}.feature-item[data-feature="5"]{display:block}.feature-item[data-feature="5"].active .feature-no{background:#dcefe3;color:#217346}.lab-version{white-space:nowrap}@media(max-width:900px){.scene-tab span{display:none}.scene-tabs{margin-right:8px}.lab-head{padding:0 16px}}
+  .scene-tabs{display:flex;align-items:center;gap:2px;margin:0 18px 0 auto;padding:5px;border:1px solid rgba(122,145,171,.12);border-radius:16px;background:rgba(255,255,255,.66);box-shadow:0 8px 24px rgba(69,89,112,.08)}.scene-tab{display:grid;grid-template-columns:auto minmax(0,1fr) 10px;grid-template-rows:auto auto;align-items:center;column-gap:10px;row-gap:1px;min-width:154px;height:52px;padding:8px 11px;border:1px solid transparent;border-radius:12px;color:#7f8994;text-decoration:none;background:transparent;transition:background .2s,border-color .2s,box-shadow .2s,transform .2s}.scene-tab:hover{background:rgba(241,247,253,.72)}.scene-tab:focus-visible{outline:2px solid #5aa8ef;outline-offset:2px}.scene-kicker{grid-row:1/3;align-self:center;font-size:10px;font-weight:700;color:#8f9aa6;white-space:nowrap}.scene-copy{display:block;min-width:0;line-height:1.05}.scene-copy b{display:block;overflow:hidden;color:#586779;font-size:12px;font-weight:700;line-height:1.2;white-space:nowrap;text-overflow:ellipsis}.scene-copy small{display:block;margin-top:3px;color:#9aa4ae;font-size:10px;line-height:1;white-space:nowrap}.scene-dot{grid-row:1/3;display:block;width:8px;height:8px;border-radius:50%;background:#b7c1cb}.scene-tab.active{border-color:#b9daf6;background:linear-gradient(180deg,#f5faff,#eaf5ff);box-shadow:0 4px 12px rgba(76,154,226,.14)}.scene-tab.active .scene-kicker,.scene-tab.active .scene-copy b{color:#2578bc}.scene-tab.active .scene-dot{background:#4a9ce6;box-shadow:0 0 0 4px rgba(74,156,230,.13)}@media(max-width:900px){.scene-tab span{display:block}.scene-tab{min-width:128px;column-gap:8px}.scene-copy small{display:none}}
+  .scene-tab{min-width:185px}@media(max-width:900px){.scene-tab{min-width:128px}}
+  .scene-tabs{margin:0 auto 0 18px}@media(max-width:900px){.scene-tabs{margin-left:8px}}
+  .scene-kicker{grid-column:1}.scene-copy{grid-column:2;grid-row:1/3;align-self:center}.scene-dot{grid-column:3}
+</style>
+</head>
+<body>
+<div class="lab">
+<header class="lab-head"><div class="lab-brand"><span class="lab-mark">AI</span><div><b>系统语音触屏交互原型</b><small>用手指确定对象，用语音表达意图</small></div></div><nav class="scene-tabs" aria-label="演示场景"><a class="scene-tab" href="./index.html"><span class="scene-kicker">场景 1</span><span class="scene-copy"><b>课程心得</b><small>写作</small></span><span class="scene-dot" aria-hidden="true"></span></a><a class="scene-tab active" href="./excel-demo.html" aria-current="page"><span class="scene-kicker">场景 2</span><span class="scene-copy"><b>表格语音</b><small>处理</small></span><span class="scene-dot" aria-hidden="true"></span></a></nav></header>
+<aside class="feature-rail"><p class="rail-kicker">INTERACTIONS</p><button class="feature-item active" data-feature="5" data-excel-mode="input"><span class="feature-no">01</span><strong>语音录入数据</strong><p>从空白表开始，按住任意单元格，说什么就直接写入什么。</p></button><button class="feature-item" data-feature="5" data-excel-mode="sum"><span class="feature-no">02</span><strong>语音数据计算</strong><p>选定数据范围，说“求和”或一次说出横纵两个计算诉求。</p></button><button class="feature-item" data-feature="5" data-excel-mode="visual"><span class="feature-no">03</span><strong>语音数据呈现</strong><p>选定数据范围，直接生成数据透视表或柱状图。</p></button></aside>
+<div class="demo-wrap"><div class="device-frame"><main class="stage" id="stage" aria-label="系统语音触屏交互演示">
+  <img class="screen" src="./hainan-notes.png" alt="折叠屏笔记界面">
+  <div class="tap-space" id="tapSpace"></div>
+  <div class="day2-cover"></div>
+  <section class="day2" aria-label="第二天行程">
+    <div class="day2-title">第2天：南山文化与海滨</div>
+    <div class="line target-line">上午参观南山文化旅游区，瞻仰<span class="phrase" id="phrase">海上观音<span class="voice-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></span>。</div>
+    <div class="line">下午前往天涯海角或大小洞天景区游玩。</div>
+    <div class="continuation"><div class="cont-title">第3天：森林公园与美食</div><div class="line">上午打卡亚龙湾热带天堂森林公园，走过江龙索桥，俯瞰亚龙湾全景。</div><div class="line">晚上去市区夜市或第一市场品尝海南四大名菜（文昌鸡、加积鸭等）。</div><div class="cont-title">第4天：蜈支洲岛一日游</div><div class="line">乘船上蜈支洲岛，体验潜水、摩托艇等海上项目。</div><div class="line">下午返回陆地，前往三亚国际免税城购物。</div><div class="cont-title">第5天：休闲返程</div><div class="line">睡到自然醒，在海边享用早餐，休整后返程。</div></div>
+  </section>
+  <section class="feature3-view" id="feature3View"><div class="xhs-pane"><img class="xhs-shot" src="./xiaohongshu-food.png" alt="小红书南海黎村美食介绍"><div class="xhs-target" id="xhsTarget"></div></div><article class="f3-note" id="f3Note"><h1>海南五日游计划</h1><div class="f3-meta">298 字｜工作笔记⌄</div><div class="f3-day"><b>第1天：抵达三亚</b><div class="f3-bullet">入住酒店，稍作休息。</div><div class="f3-bullet">傍晚前往椰梦长廊散步，欣赏三亚湾日落。</div></div><div class="f3-day"><b>第2天：南山文化与海滨</b><div class="f3-bullet">上午参观南山文化旅游区，瞻仰海上观音。</div><div class="f3-bullet">下午前往天涯海角或大小洞天景区游玩。</div><div class="f3-insert" id="f3Insert"><div class="f3-bullet"><span class="f3-newline">晚上前往南海黎村享用海南民族菜。</span></div><div class="shop-card"><div class="shop-photo"></div><div class="shop-info"><strong>南海黎村·海南民族菜</strong><span>三亚市海棠区<br>海棠湾沙滩旁</span></div></div></div></div><div class="f3-day"><b>第3天：森林公园与美食</b><div class="f3-bullet">上午打卡亚龙湾热带天堂森林公园，俯瞰海湾全景。</div><div class="f3-bullet">晚上去第一市场品尝海南四大名菜。</div></div><div class="f3-day"><b>第4天：蜈支洲岛一日游</b><div class="f3-bullet">体验潜水、摩托艇等海上项目。</div></div><div class="f3-day"><b>第5天：休闲返程</b><div class="f3-bullet">海边早餐，休整后返程。</div></div></article><svg class="f3-ink" id="f3Ink"><defs><linearGradient id="f3Gradient"><stop stop-color="#6daaff"/><stop offset=".34" stop-color="#67e1e3"/><stop offset=".68" stop-color="#ffdf67"/><stop offset="1" stop-color="#ff98bd"/></linearGradient><filter id="f3Glow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path class="f3-path" id="f3Path" d=""/></svg><div class="f3-source-halo" id="f3Halo"></div></section>
+  <section class="feature4-view" id="feature4View"><div class="f4-bar"><span>‹　全部笔记</span><b>海南五日游计划</b><span>撤销　完成</span></div><article class="f4-before"><h1>海南五日游计划</h1><div class="meta">298 字｜工作笔记</div><p><b>第1天：</b>抵达三亚，入住酒店，傍晚漫步椰梦长廊。</p><p><b>第2天：</b>南山文化旅游区、天涯海角或大小洞天。</p><p><b>第3天：</b>亚龙湾热带天堂森林公园与市区美食。</p><p><b>第4天：</b>蜈支洲岛一日游，体验海上项目。</p><p><b>第5天：</b>海边早餐，休整后返程。</p></article><aside class="f4-suggestion" id="f4Suggestion"><div class="f4-suggest-head"><b>小V建议</b><span>已找到机票行程卡</span></div><div class="f4-flight-mini"><strong>9月1日　上海虹桥 → 三亚凤凰</strong><span>08:10–11:20｜模拟航班 VX215</span></div></aside><article class="f4-plan"><div class="plan-head"><div><h1>三亚五日旅行计划</h1><p>2026.09.01—09.05｜上海 ⇄ 三亚｜公共交通优先</p></div><span class="plan-badge">✓ 已结合机票行程</span></div><div class="plan-top"><section class="flight-card"><div class="flight-title"><span>小V建议 · 模拟航班</span><b>VX215</b></div><div class="flight-route"><div class="airport"><strong>08:10</strong><span>上海虹桥 T2 · SHA</span></div><div class="flight-line">直飞<i></i>3h10m</div><div class="airport"><strong>11:20</strong><span>三亚凤凰 T1 · SYX</span></div></div><div class="flight-meta"><span>9月1日 周二</span><span>经济舱 · 含托运行李</span><span>建议 06:40 到机场</span><span>返程 9月5日 18:30 · VX216</span></div></section><section class="route-card"><b>公共交通路线总览</b><div class="route-track"><span>凤凰机场</span><i>机场巴士1线 →</i><span>三亚湾</span><i>16路 →</i><span>南山</span><i>15路 →</i><span>亚龙湾</span><i>28路＋轮渡 →</i><span>蜈支洲岛</span></div></section></div><div class="days-grid"><section class="day-card"><span class="day-date">DAY 1 · 9/1</span><h3>抵达与三亚湾</h3><p><span class="day-dot"></span>11:20 抵达凤凰机场</p><p>入住酒店，傍晚漫步椰梦长廊。</p><em>🚌 机场巴士1线 → 酒店，约55分钟；8路公交前往椰梦长廊</em></section><section class="day-card"><span class="day-date">DAY 2 · 9/2</span><h3>南山与海滨</h3><p>上午南山文化旅游区，下午天涯海角。</p><p>晚上南海黎村享用民族菜。</p><em>🚌 16路直达南山约90分钟；景区专线转天涯海角</em></section><section class="day-card"><span class="day-date">DAY 3 · 9/3</span><h3>亚龙湾与美食</h3><p>森林公园、过江龙索桥，晚上第一市场。</p><em>🚌 15路至亚龙湾；景区接驳车上山；24路到第一市场</em></section><section class="day-card"><span class="day-date">DAY 4 · 9/4</span><h3>蜈支洲岛</h3><p>全天海岛游，体验潜水与摩托艇。</p><em>🚌 28路至蜈支洲岛码头约80分钟，再换乘轮渡</em></section><section class="day-card"><span class="day-date">DAY 5 · 9/5</span><h3>海边早餐与返程</h3><p>上午自由活动，15:30 出发前往机场。</p><em>🚌 33路或机场巴士，预留约60分钟及候机时间</em></section></div></article></section>
+  <section class="feature5-view" id="feature5View"><div class="xl-titlebar"><strong>▦ Excel</strong><span>自动保存</span><span class="xl-file">上半年区域销售数据.xlsx</span><span>共享　⋯</span></div><div class="xl-ribbon"><div class="xl-tabs"><b>开始</b><span>插入</span><span>页面布局</span><span>公式</span><span>数据</span><span>审阅</span><span>视图</span></div><div class="xl-tools"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="xl-formula"><span class="xl-name" id="xlName">A1</span><span class="xl-fx">fx</span><span class="xl-formula-value" id="xlFormula">上半年区域销售数据</span></div><div class="xl-workspace"><div class="xl-grid-wrap"><div class="xl-grid" id="xlGrid">
+    <span class="xl-cell xl-col"></span><span class="xl-cell xl-col">A</span><span class="xl-cell xl-col">B</span><span class="xl-cell xl-col">C</span><span class="xl-cell xl-col">D</span><span class="xl-cell xl-col">E</span><span class="xl-cell xl-col">F</span>
+    <span class="xl-cell xl-row">1</span><span class="xl-cell xl-head">月份</span><span class="xl-cell xl-head">华东</span><span class="xl-cell xl-head">华南</span><span class="xl-cell xl-head">华北</span><span class="xl-cell xl-head">西南</span><span class="xl-cell xl-head">合计</span>
+    <span class="xl-cell xl-row">2</span><span class="xl-cell">1月</span><span class="xl-cell">128</span><span class="xl-cell">96</span><span class="xl-cell">84</span><span class="xl-cell">72</span><span class="xl-cell">380</span>
+    <span class="xl-cell xl-row">3</span><span class="xl-cell">2月</span><span class="xl-cell">142</span><span class="xl-cell">108</span><span class="xl-cell">91</span><span class="xl-cell">79</span><span class="xl-cell">420</span>
+    <span class="xl-cell xl-row">4</span><span class="xl-cell">3月</span><span class="xl-cell">156</span><span class="xl-cell">121</span><span class="xl-cell">103</span><span class="xl-cell">88</span><span class="xl-cell">468</span>
+    <span class="xl-cell xl-row">5</span><span class="xl-cell">4月</span><span class="xl-cell">174</span><span class="xl-cell">135</span><span class="xl-cell">112</span><span class="xl-cell">97</span><span class="xl-cell">518</span>
+    <span class="xl-cell xl-row">6</span><span class="xl-cell">5月</span><span class="xl-cell">188</span><span class="xl-cell">149</span><span class="xl-cell">126</span><span class="xl-cell">109</span><span class="xl-cell">572</span>
+    <span class="xl-cell xl-row">7</span><span class="xl-cell">6月</span><span class="xl-cell">203</span><span class="xl-cell">162</span><span class="xl-cell">139</span><span class="xl-cell">118</span><span class="xl-cell">622</span>
+    <span class="xl-cell xl-row">8</span><span class="xl-cell xl-total">总计</span><span class="xl-cell xl-total">991</span><span class="xl-cell xl-total">771</span><span class="xl-cell xl-total">655</span><span class="xl-cell xl-total">563</span><span class="xl-cell xl-total">2,980</span><span class="xl-selection" id="xlSelection"></span>
+  </div></div><aside class="xl-output" id="xlOutput"><div class="xl-output-empty" id="xlEmpty"><div><b>选区已就绪</b>说出你希望执行的操作</div></div><section class="xl-result xl-sum" id="xlSum"><span class="xl-result-label">已将结果写入 F8</span><div class="xl-sum-card"><span>B2:E7 数据求和</span><strong>2,980</strong><code>=SUM(B2:E7)</code></div></section><section class="xl-result xl-pivot" id="xlPivot"><span class="xl-result-label">已生成数据透视表</span><h3>各区域销售汇总</h3><div class="xl-mini-table"><span class="ph">区域</span><span class="ph">销售额</span><span>华东</span><span>991</span><span>华南</span><span>771</span><span>华北</span><span>655</span><span>西南</span><span>563</span><span class="ph">总计</span><span class="ph">2,980</span></div></section><section class="xl-result xl-chart" id="xlChart"><span class="xl-result-label">已在当前工作表插入图表</span><h3>月度销售合计</h3><div class="xl-chart-bars"><i class="xl-bar" style="--h:54%" data-v="380" data-m="1月"></i><i class="xl-bar" style="--h:60%" data-v="420" data-m="2月"></i><i class="xl-bar" style="--h:67%" data-v="468" data-m="3月"></i><i class="xl-bar" style="--h:74%" data-v="518" data-m="4月"></i><i class="xl-bar" style="--h:82%" data-v="572" data-m="5月"></i><i class="xl-bar" style="--h:89%" data-v="622" data-m="6月"></i></div></section></aside></div><div class="xl-status">工作表1　＋ <b id="xlStatus">就绪</b></div></section>
+  <section class="feature6-view" id="feature6View"></section>
+  <span class="touch-dot" id="touchDot"></span>
+  <span class="touch-dot second" id="touchDot2"></span><span class="pinch-line" id="pinchLine"></span>
+</main></div><div class="speech-caption" id="speechCaption"><div class="speech-top"><span class="mini-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span>语音指令</span><span class="speech-state" id="speechState">正在聆听</span></div><div class="speech-text" id="speechText"></div></div></div>
+<aside class="help"><span class="help-kicker">HOW TO USE</span><h2 id="helpTitle">划一下，按住说</h2><p class="help-intro" id="helpIntro">所有操作都按手机触屏方式设计。你可以直接在中间的界面上体验。</p><ol class="steps" id="steps"><li><i>1</i><div><b>划词选中</b><span>手指划过“海上观音”</span></div></li><li><i>2</i><div><b>继续按住说话</b><span>停留片刻，松手后执行指令</span></div></li><li><i>3</i><div><b>左右滑动选择</b><span>在新行程上横向滑动切换 4 个答案</span></div></li><li><i>4</i><div><b>点击空白确认</b><span>结束这一轮编辑</span></div></li></ol><button class="demo-button" id="autoDemo">观看触屏演示</button><div class="excel-actions" id="excelActions"></div><button class="reset-button" id="resetDemo">重置演示</button><div class="gesture-key"><span><i class="dot-icon"></i>触点</span><span><i class="swipe-icon"></i>滑动</span></div></aside>
+</div>
+<script>
+const stage=document.querySelector('#stage');
+const phrase=document.querySelector('#phrase');
+const tapSpace=document.querySelector('#tapSpace');
+const line=document.querySelector('.target-line');
+const touchDot=document.querySelector('#touchDot');
+const touchDot2=document.querySelector('#touchDot2');
+const pinchLine=document.querySelector('#pinchLine');
+const autoDemo=document.querySelector('#autoDemo');
+const resetDemo=document.querySelector('#resetDemo');
+const speechCaption=document.querySelector('#speechCaption');
+const speechText=document.querySelector('#speechText');
+const speechState=document.querySelector('#speechState');
+const xhsTarget=document.querySelector('#xhsTarget');
+const f3Path=document.querySelector('#f3Path');
+const f3Halo=document.querySelector('#f3Halo');
+const f3Note=document.querySelector('#f3Note');
+const feature4View=document.querySelector('#feature4View');
+const feature6View=document.querySelector('#feature6View');
+let f4Suggestion=document.querySelector('#f4Suggestion');
+let f4Picking=false,f4HasSelection=false,f4StartIndex=0,f4HoldTimer=0;
+let f6Picking=false,f6StartIndex=0,f6HasSelection=false,f6Busy=false,f6HoldTimer=0;
+const xlGrid=document.querySelector('#xlGrid');
+const xlSelection=document.querySelector('#xlSelection');
+const xlName=document.querySelector('#xlName');
+const xlFormula=document.querySelector('#xlFormula');
+const xlEmpty=document.querySelector('#xlEmpty');
+const xlStatus=document.querySelector('#xlStatus');
+const excelActions=document.querySelector('#excelActions');
+const xlResults=[...document.querySelectorAll('.xl-result')];
+const instruction='第二天的这个的行程我不太喜欢，有没有其他地方推荐？';
+const crossInstruction='第二天晚上我想去这个地方吃饭，帮我安排到我的行程里。';
+const travelInstruction='我计划9月1号出发，帮我把这个行程做成我的旅行计划表吧。';
+const densityCopy={
+  simple:'槟榔谷。',
+  normal:'槟榔谷黎苗文化旅游区，体验海南民族风情',
+  detailed:'槟榔谷黎苗文化旅游区（建议游玩约3小时）：参观黎苗村寨与非遗工坊，观看民族歌舞，体验竹筒饭等特色饮食。'
+};
+const semanticLevels=[
+  '上午游览槟榔谷。',
+  '上午游览槟榔谷，感受黎苗文化。',
+  '上午前往槟榔谷黎苗文化旅游区，体验海南民族风情。',
+  '上午前往槟榔谷黎苗文化旅游区，建议游玩约3小时，体验海南民族风情。',
+  '上午前往槟榔谷黎苗文化旅游区，建议游玩约3小时，参观黎苗村寨与非遗工坊。',
+  '上午前往槟榔谷黎苗文化旅游区，建议游玩约3小时，参观黎苗村寨与非遗工坊，观看民族歌舞。',
+  '上午前往槟榔谷黎苗文化旅游区（建议游玩约3小时）：参观黎苗村寨与非遗工坊，观看民族歌舞，体验竹筒饭等特色饮食。'
+];
+const answers=[
+  '槟榔谷黎苗文化旅游区，体验海南民族风情',
+  '呀诺达雨林文化旅游区，漫步热带雨林峡谷',
+  '西岛渔村，感受珊瑚海岸与原生态渔村生活',
+  '三亚千古情景区，体验海南历史文化演出'
+];
+let state='idle',pressTimer=0,down=null,index=0,startX=0,speechTimer=0,speechIndex=0,activeFeature=1,pinchStart=0,pinchDelta=0,semanticIndex=2,pinchBaseIndex=2,demoEpoch=0;
+const pointers=new Map();
+let f3Drawing=false,f3Points=[],f3Reached=false,f3Listening=false,f3HoldTimer=0;
+
+function beginListening(){
+  if(state!=='selected')return;
+  state='listening';phrase.classList.add('listening');
+  speechCaption.classList.add('show');speechCaption.classList.remove('processing');speechState.textContent='正在聆听';speechText.textContent='';speechIndex=0;
+  clearInterval(speechTimer);speechTimer=setInterval(()=>{speechText.textContent=instruction.slice(0,++speechIndex);if(speechIndex>=instruction.length)clearInterval(speechTimer)},68);
+  navigator.vibrate?.(25);
+}
+
+function select(continueHolding=false){
+  if(state!=='idle')return;
+  state='selected';
+  phrase.classList.remove('selecting');
+  phrase.classList.add('selected');
+  if(continueHolding){
+    clearTimeout(pressTimer);
+    pressTimer=setTimeout(()=>{
+      if(state==='selected'){
+        beginListening();
+      }
+    },420);
+  }
+}
+
+phrase.addEventListener('pointerdown',e=>{
+  e.preventDefault();e.stopPropagation();startX=e.clientX;
+  if(activeFeature===2&&state==='result'){
+    pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.size===2){const [a,b]=[...pointers.values()];pinchStart=Math.abs(a.y-b.y);pinchBaseIndex=semanticIndex;phrase.classList.add('scaling')}
+    try{phrase.setPointerCapture?.(e.pointerId)}catch{}
+    return;
+  }
+  if(state==='idle'){
+    down={x:e.clientX,y:e.clientY};
+    phrase.classList.add('selecting');
+    phrase.setPointerCapture(e.pointerId);
+    return;
+  }
+  if(state==='selected'){
+    pressTimer=setTimeout(()=>{
+      beginListening();
+    },420);
+  }
+});
+
+phrase.addEventListener('pointermove',e=>{
+  if(activeFeature===2&&pointers.has(e.pointerId)){
+    pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.size===2){const [a,b]=[...pointers.values()];pinchDelta=Math.abs(a.y-b.y)-pinchStart;setSemanticIndex(pinchBaseIndex+Math.round(pinchDelta/8),false)}
+    return;
+  }
+  if(state==='idle'&&down&&Math.abs(e.clientX-down.x)>12)select(true);
+  if(state==='result'&&Math.abs(e.clientX-startX)>42){
+    const dir=e.clientX<startX?1:-1;startX=e.clientX;showAnswer((index+dir+answers.length)%answers.length,dir);
+  }
+});
+
+phrase.addEventListener('pointerup',e=>{
+  if(activeFeature===2&&pointers.has(e.pointerId)){
+    pointers.delete(e.pointerId);if(pointers.size===0){phrase.classList.remove('scaling');phrase.style.removeProperty('--semantic-scale');pinchDelta=0;navigator.vibrate?.(10)}return;
+  }
+  clearTimeout(pressTimer);
+  if(state==='idle')select();
+  else if(state==='listening')execute();
+  down=null;
+});
+phrase.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);clearTimeout(pressTimer);down=null});
+
+function execute(){
+  clearInterval(speechTimer);speechText.textContent=instruction;speechCaption.classList.add('processing');speechState.textContent='正在执行';
+  state='result';stage.classList.add('edited');
+  phrase.className='replacement';
+  phrase.innerHTML='上午前往'+answers[0]+'。<span class="swipe-zone"></span>';
+  line.firstChild.textContent='';line.lastChild.textContent='';
+  setTimeout(()=>speechCaption.classList.remove('show'),620);
+}
+
+function showAnswer(next,dir){
+  if(state!=='result'||activeFeature===2)return;
+  index=next;phrase.style.setProperty('--slide',dir>0?'12px':'-12px');
+  phrase.classList.remove('changing');void phrase.offsetWidth;phrase.classList.add('changing');
+  phrase.firstChild.textContent='上午前往'+answers[index]+'。';navigator.vibrate?.(8);
+}
+
+tapSpace.addEventListener('pointerdown',()=>{
+  if(state!=='result')return;
+  state='confirmed';stage.classList.add('confirmed');phrase.classList.remove('changing');
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft')showAnswer((index+answers.length-1)%answers.length,-1);
+  if(e.key==='ArrowRight')showAnswer((index+1)%answers.length,1);
+  if(e.key.toLowerCase()==='r')location.reload();
+});
+
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function pointAt(x,y,down=false){touchDot.getAnimations().forEach(a=>a.cancel());touchDot.style.left=x+'px';touchDot.style.top=y+'px';touchDot.style.opacity='1';touchDot.classList.toggle('down',down)}
+function pointEl(el,x,y,down=false){el.getAnimations().forEach(a=>a.cancel());el.style.left=x+'px';el.style.top=y+'px';el.style.opacity='1';el.classList.toggle('down',down)}
+function drawPinch(a,b,visible=true){const dx=b.x-a.x,dy=b.y-a.y;pinchLine.style.left=a.x+'px';pinchLine.style.top=a.y+'px';pinchLine.style.width=Math.hypot(dx,dy)+'px';pinchLine.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;pinchLine.style.opacity=visible?'0.72':'0'}
+
+function f3Local(e){const r=stage.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+function f3Draw(){f3Path.setAttribute('d',f3Points.length?'M'+f3Points.map(p=>`${p.x},${p.y}`).join(' L'):'')}
+function f3BeginListening(){
+  if(f3Listening)return;f3Listening=true;state='cross-listening';speechCaption.classList.add('show');speechCaption.classList.remove('processing');speechState.textContent='正在聆听';speechText.textContent='';speechIndex=0;clearInterval(speechTimer);speechTimer=setInterval(()=>{speechText.textContent=crossInstruction.slice(0,++speechIndex);if(speechIndex>=crossInstruction.length)clearInterval(speechTimer)},68);navigator.vibrate?.(25)
+}
+function f3Execute(){
+  if(state==='cross-done')return;clearInterval(speechTimer);speechText.textContent=crossInstruction;speechCaption.classList.add('processing');speechState.textContent='正在写入笔记';state='cross-done';f3Note.classList.add('f3-done');f3Path.style.opacity='.28';navigator.vibrate?.(18);setTimeout(()=>speechCaption.classList.remove('show'),720)
+}
+xhsTarget.addEventListener('pointerdown',e=>{
+  if(activeFeature!==3||state==='cross-done')return;e.preventDefault();f3Drawing=true;f3Reached=false;f3Listening=false;f3Points=[f3Local(e)];f3Path.style.opacity='1';f3Halo.classList.remove('show');try{xhsTarget.setPointerCapture(e.pointerId)}catch{}
+});
+xhsTarget.addEventListener('pointermove',e=>{
+  if(!f3Drawing)return;const p=f3Local(e);f3Points.push(p);f3Draw();
+  if(p.x>stage.clientWidth*.56&&!f3Reached){f3Reached=true;f3HoldTimer=setTimeout(f3BeginListening,420)}
+});
+xhsTarget.addEventListener('pointerup',()=>{if(!f3Drawing)return;f3Drawing=false;clearTimeout(f3HoldTimer);if(f3Listening)f3Execute()});
+xhsTarget.addEventListener('pointercancel',()=>{f3Drawing=false;clearTimeout(f3HoldTimer)});
+
+function prepareFeature3(){
+  autoDemo.style.display='block';excelActions.classList.remove('show');activeFeature=3;state='cross-ready';stage.className='stage feature3';f3Points=[];f3Draw();f3Path.style.opacity='1';f3Note.classList.remove('f3-done');f3Halo.classList.remove('show');speechCaption.classList.remove('show');
+  document.querySelectorAll('.feature-item').forEach(x=>x.classList.toggle('active',x.dataset.feature==='3'));
+  document.querySelector('#helpTitle').textContent='圈住内容，连到笔记';document.querySelector('#helpIntro').textContent='用一条连续触屏轨迹同时表达信息来源、写入位置和语音意图。';
+  document.querySelector('#steps').innerHTML='<li><i>1</i><div><b>圈住左侧内容</b><span>圈选小红书中的店铺与美食介绍</span></div></li><li><i>2</i><div><b>连线到右侧</b><span>不抬手，将轨迹拉到第二天行程</span></div></li><li><i>3</i><div><b>按住说话</b><span>说“第二天晚上想去这个地方吃饭”</span></div></li><li><i>4</i><div><b>松手写入</b><span>新增晚餐安排和店铺地址卡</span></div></li>';
+  autoDemo.textContent='观看跨屏演示';
+}
+
+function renderFeature4Note(){
+  feature4View.innerHTML='<article class="f4-note-before"><p><b>第1天：抵达三亚</b></p><p>• 入住酒店，稍作休息。</p><p>• 傍晚前往椰梦长廊散步，欣赏三亚湾日落。</p><p><b>第2天：南山文化与海滨</b></p><p>• 上午参观南山文化旅游区，瞻仰海上观音。</p><p>• 下午前往天涯海角或大小洞天景区游玩。</p><p><b>第3天：森林公园与美食</b></p><p>• 亚龙湾热带天堂森林公园，晚上品尝海南美食。</p><p><b>第4天：蜈支洲岛一日游</b></p><p>• 体验潜水、摩托艇等海上项目。</p><p><b>第5天：休闲返程</b></p><p>• 海边早餐，休整后返程。</p></article><aside class="f4-suggestion" id="f4Suggestion"><div class="f4-suggest-head"><b>小V建议</b><span>找到模拟机票行程</span></div><div class="f4-flight-mini"><strong>9月1日 上海虹桥 → 三亚凤凰</strong><span>08:10–11:20 · VX215</span></div></aside><article class="f4-note-plan"><div class="f4-overview"><span>9月1日—5日</span><span>上海 ⇄ 三亚</span><span>公共交通优先</span></div><div class="route-inline">路线概览　凤凰机场 → 三亚湾 → 南山 → 亚龙湾 → 海棠湾 → 蜈支洲岛</div><section class="note-day"><h3>第1天 · 抵达与三亚湾 <small>9月1日</small></h3><div class="flight-inline"><b>✈ 模拟航班 VX215</b> 08:10 上海虹桥 T2 → 11:20 三亚凤凰 T1</div><div class="note-row"><span class="note-time">11:40</span><span class="note-copy">前往酒店办理入住，稍作休息。</span></div><div class="transit-inline">机场巴士1线，约55分钟</div><div class="note-row"><span class="note-time">17:30</span><span class="note-copy">椰梦长廊散步，欣赏三亚湾日落。</span></div><div class="transit-inline">8路公交直达</div></section><section class="note-day"><h3>第2天 · 南山与海滨 <small>9月2日</small></h3><div class="note-row"><span class="note-time">08:00</span><span class="note-copy">南山文化旅游区；下午前往天涯海角。</span></div><div class="transit-inline">16路至南山约90分钟，转景区专线</div><div class="note-row"><span class="note-time">18:30</span><span class="note-copy">南海黎村享用海南民族菜。</span></div></section><section class="note-day"><h3>第3天 · 亚龙湾与美食 <small>9月3日</small></h3><div class="note-row"><span class="note-time">09:00</span><span class="note-copy">热带天堂森林公园，晚上前往第一市场。</span></div><div class="transit-inline">15路＋景区接驳车；24路至第一市场</div></section><section class="note-day"><h3>第4天 · 蜈支洲岛 <small>9月4日</small></h3><div class="note-row"><span class="note-time">07:30</span><span class="note-copy">全天海岛游，体验潜水与摩托艇。</span></div><div class="transit-inline">28路至码头约80分钟，再换乘轮渡</div></section><section class="note-day"><h3>第5天 · 海边早餐与返程 <small>9月5日</small></h3><div class="note-row"><span class="note-time">15:30</span><span class="note-copy">出发前往机场；18:30 乘模拟航班 VX216 返程。</span></div><div class="transit-inline">33路或机场巴士，预留约60分钟</div></section></article>';
+  const f4Before=feature4View.querySelector('.f4-note-before');f4Before.innerHTML='<p><b>第1天：抵达三亚</b></p><p>• 入住酒店，稍作休息。</p><p>• 傍晚前往椰梦长廊散步，欣赏三亚湾日落。</p><p><b>第2天：黎苗文化与海滨</b></p><p>• 上午前往槟榔谷黎苗文化旅游区，参观黎苗村寨与非遗工坊，体验海南民族风情。</p><p>• 下午前往天涯海角或大小洞天景区游玩。</p><p><b>第3天：森林公园与美食</b></p><p>• 亚龙湾热带天堂森林公园，晚上品尝海南美食。</p><p><b>第4天：蜈支洲岛一日游</b></p><p>• 体验潜水、摩托艇等海上项目。</p><p><b>第5天：休闲返程</b></p><p>• 海边早餐，休整后返程。</p>';
+  f4Before.insertAdjacentHTML('afterbegin','<h1>海南五日游计划</h1>');const f4Plan=feature4View.querySelector('.f4-note-plan');f4Plan.insertAdjacentHTML('afterbegin','<h1 class="f4-result-title">海南五日游计划</h1>');f4Plan.querySelector('.f4-overview').insertAdjacentHTML('beforeend','<span class="f4-source">来源：小V建议·机票行程卡</span>');f4Suggestion=feature4View.querySelector('#f4Suggestion');
+}
+function prepareFeature4(){
+  autoDemo.style.display='block';excelActions.classList.remove('show');renderFeature4Note();activeFeature=4;state='travel-ready';stage.className='stage feature4';feature4View.classList.remove('f4-result');f4Suggestion.classList.remove('show');speechCaption.classList.remove('show');
+  f4Picking=false;f4HasSelection=false;autoDemo.disabled=true;const before=feature4View.querySelector('.f4-note-before'),units=[...before.querySelectorAll('h1,p')];const paintRange=end=>{const a=Math.min(f4StartIndex,end),b=Math.max(f4StartIndex,end);units.forEach((x,i)=>x.classList.toggle('f4-picked',i>=a&&i<=b));f4HasSelection=true;autoDemo.disabled=false};const indexAtY=y=>{if(y<=units[0].getBoundingClientRect().top)return 0;for(let i=0;i<units.length;i++){const r=units[i].getBoundingClientRect();if(y<=(r.top+r.bottom)/2)return i}return units.length-1};before.addEventListener('pointerdown',e=>{const unit=e.target.closest('h1,p');if(!unit)return;e.preventDefault();f4StartIndex=units.indexOf(unit);f4Picking=true;paintRange(f4StartIndex);try{before.setPointerCapture(e.pointerId)}catch{}});before.addEventListener('pointermove',e=>{if(f4Picking)paintRange(indexAtY(e.clientY))});before.addEventListener('pointerup',()=>f4Picking=false);before.addEventListener('pointercancel',()=>f4Picking=false);
+  const armF4Voice=()=>{clearTimeout(f4HoldTimer);f4HoldTimer=setTimeout(()=>{if(f4Picking&&f4HasSelection)autoRunFeature4()},620)};before.addEventListener('pointerdown',armF4Voice);before.addEventListener('pointermove',armF4Voice);before.addEventListener('pointerup',()=>clearTimeout(f4HoldTimer));before.addEventListener('pointercancel',()=>clearTimeout(f4HoldTimer));
+  document.querySelectorAll('.feature-item').forEach(x=>x.classList.toggle('active',x.dataset.feature==='4'));
+  document.querySelector('#helpTitle').textContent='一句话补全并格式化笔记';document.querySelector('#helpIntro').textContent='当前案例使用出发日期作为意图，结合笔记、系统航班数据和出行偏好，一次完成内容补全与结构化排版。';
+  document.querySelector('#steps').innerHTML='<li><i>1</i><div><b>拖选要处理的笔记</b><span>可以选中一段或连续多段行程</span></div></li><li><i>2</i><div><b>说出补全与格式意图</b><span>“我计划9月1号出发，帮我做成旅行计划表”</span></div></li><li><i>3</i><div><b>联动系统数据</b><span>读取航班信息和公共交通偏好</span></div></li><li><i>4</i><div><b>原位补全并格式化</b><span>内容仍保持在右侧笔记页面中</span></div></li>';
+  autoDemo.textContent='语音：补全并格式化所选内容';
+}
+
+function renderFeature6(){
+  renderFeature4Note();const source=feature4View.querySelector('.f4-note-plan').innerHTML;feature6View.innerHTML='<article class="f6-note" id="f6Note">'+source+'</article>';const note=feature6View.querySelector('#f6Note');note.querySelector('.f4-result-title')?.classList.add('f6-title');
+  const places=['上海虹桥','三亚凤凰','椰梦长廊','南山文化旅游区','天涯海角','南海黎村','热带天堂森林公园','第一市场','蜈支洲岛'];places.forEach(name=>{note.innerHTML=note.innerHTML.split(name).join('<span class="place-name">'+name+'</span>')});
+  const addresses=[['三亚凤凰机场','三亚市天涯区机场路','椰梦长廊','三亚市天涯区三亚湾路'],['南山文化旅游区','三亚市崖州区南山村','南海黎村','三亚市海棠区海棠湾'],['亚龙湾森林公园','三亚市吉阳区亚龙湾路','第一市场','三亚市天涯区新建街155号'],['蜈支洲岛','三亚市海棠区海棠湾镇'],['三亚凤凰机场','三亚市天涯区机场路']];[...note.querySelectorAll('.note-day')].forEach((day,i)=>{const a=addresses[i];if(a){let rows='';for(let j=0;j<a.length;j+=2)rows+='<b>'+a[j]+'</b>　'+a[j+1]+(j+2<a.length?'<br>':'');day.insertAdjacentHTML('beforeend','<div class="place-address"><span class="place-pin">● 地点标注</span>　'+rows+'</div>')}});
+}
+function prepareFeature6(){
+  renderFeature6();activeFeature=6;state='format-ready';stage.className='stage feature6';autoDemo.style.display='none';speechCaption.classList.remove('show');document.querySelectorAll('.feature-item').forEach(x=>x.classList.toggle('active',x.dataset.feature==='6'));document.querySelector('#helpTitle').textContent='选中一个样例，批量编辑同类内容';document.querySelector('#helpIntro').textContent='直接承接 Demo 03 生成的旅行计划表。手指指明样例或范围，语音说明要批量执行的样式意图。';document.querySelector('#steps').innerHTML='<li><i>1</i><div><b>选中一个日期标题</b><span>说“把所有的标题加粗放大”</span></div></li><li><i>2</i><div><b>选中整篇内容</b><span>说“把所有内容的字号放大两个字符”</span></div></li><li><i>3</i><div><b>让 AI 识别信息类型</b><span>说“把所有的地点标注出来，并且携带地址”</span></div></li>';
+  const note=feature6View.querySelector('#f6Note'),units=[...note.querySelectorAll('.f4-overview,.route-inline,.note-day h3,.flight-inline,.note-row,.transit-inline')];f6Picking=false;f6HasSelection=false;f6Busy=false;const paint=end=>{const a=Math.min(f6StartIndex,end),b=Math.max(f6StartIndex,end);units.forEach((x,i)=>x.classList.toggle('f6-picked',i>=a&&i<=b));f6HasSelection=true;document.querySelectorAll('.format-command').forEach(x=>x.disabled=false)};const atY=y=>{if(y<=units[0].getBoundingClientRect().top)return 0;for(let i=0;i<units.length;i++){const r=units[i].getBoundingClientRect();if(y<=(r.top+r.bottom)/2)return i}return units.length-1};note.addEventListener('pointerdown',e=>{const unit=e.target.closest('.f4-overview,.route-inline,.note-day h3,.flight-inline,.note-row,.transit-inline');if(!unit)return;e.preventDefault();f6StartIndex=units.indexOf(unit);f6Picking=true;paint(f6StartIndex);try{note.setPointerCapture(e.pointerId)}catch{}});note.addEventListener('pointermove',e=>{if(f6Picking)paint(atY(e.clientY+feature6View.scrollTop))});note.addEventListener('pointerup',()=>f6Picking=false);note.addEventListener('pointercancel',()=>f6Picking=false);
+  excelActions.classList.add('show');excelActions.innerHTML='<button class="excel-command format-command" data-command="把所有的标题加粗放大" disabled><b>语音</b>把所有的标题加粗放大</button><button class="excel-command format-command" data-command="把所有内容的字号放大两个字符" disabled><b>语音</b>把所有内容的字号放大两个字符</button><button class="excel-command format-command" data-command="把所有的地点都帮我标注出来，并且携带地址" disabled><b>语音</b>标注所有地点并携带地址</button><p class="excel-hint">可以重复选区并叠加执行三种编辑。</p>';excelActions.querySelectorAll('.format-command').forEach(x=>x.onclick=()=>runFeature6Command(x.dataset.command))
+  const title=note.querySelector('.f6-title');title.addEventListener('pointerdown',e=>{e.preventDefault();units.forEach(x=>x.classList.remove('f6-picked'));title.classList.add('f6-picked');f6HasSelection=true;f6Picking=true;document.querySelectorAll('.format-command').forEach(x=>x.disabled=false);try{note.setPointerCapture(e.pointerId)}catch{}});const armF6Voice=()=>{clearTimeout(f6HoldTimer);f6HoldTimer=setTimeout(()=>{if(!f6Picking||!f6HasSelection||f6Busy)return;const picked=note.querySelector('.f6-picked'),command=(picked?.matches('.f6-title,.note-day h3')&&!note.classList.contains('format-headings'))?'把所有的标题加粗放大':!note.classList.contains('format-larger')?'把所有内容的字号放大两个字符':'把所有的地点都帮我标注出来，并且携带地址';runFeature6Command(command)},620)};note.addEventListener('pointerdown',armF6Voice);note.addEventListener('pointermove',armF6Voice);note.addEventListener('pointerup',()=>clearTimeout(f6HoldTimer));note.addEventListener('pointercancel',()=>clearTimeout(f6HoldTimer));
+}
+async function runFeature6Command(command){
+  if(!f6HasSelection||f6Busy)return;const run=demoEpoch;f6Busy=true;document.querySelectorAll('.format-command').forEach(x=>x.disabled=true);speechCaption.classList.add('show');speechCaption.classList.remove('processing');speechState.textContent='正在聆听';speechText.textContent='';for(let i=1;i<=command.length;i++){if(run!==demoEpoch)return;speechText.textContent=command.slice(0,i);await wait(62)}speechCaption.classList.add('processing');speechState.textContent='正在批量编辑';await wait(600);if(run!==demoEpoch)return;
+  const note=feature6View.querySelector('#f6Note');if(command.includes('标题')){note.classList.add('format-headings');note.querySelectorAll('.note-day h3').forEach((title,i)=>{title.style.fontSize='1.95cqw';title.style.fontWeight='900';title.style.lineHeight='1.35';title.style.transitionDelay=(i*.06)+'s'})}else if(command.includes('字号'))note.classList.add('format-larger');else note.classList.add('show-addresses');note.querySelectorAll('.f6-picked').forEach(x=>x.classList.remove('f6-picked'));f6HasSelection=false;await wait(500);if(run!==demoEpoch)return;speechCaption.classList.remove('show');f6Busy=false;document.querySelectorAll('.format-command').forEach(x=>x.disabled=true)
+}
+
+function prepareScale(){
+  autoDemo.style.display='block';excelActions.classList.remove('show');activeFeature=2;state='result';index=0;semanticIndex=2;stage.className='stage edited';line.firstChild.textContent='';line.lastChild.textContent='';phrase.className='replacement';phrase.innerHTML=semanticLevels[semanticIndex]+'<span class="swipe-zone"></span>';
+  document.querySelectorAll('.feature-item').forEach(x=>x.classList.toggle('active',x.dataset.feature==='2'));
+  document.querySelector('#helpTitle').textContent='指尖距离就是内容长度';document.querySelector('#helpIntro').textContent='第二个功能承接第一个功能的生成结果，文本长度会实时跟随双指纵向间距。';
+  document.querySelector('#steps').innerHTML='<li><i>1</i><div><b>双指纵向按住</b><span>两个触点上下落在新生成的行程上</span></div></li><li><i>2</i><div><b>拉多少，展开多少</b><span>每一小段位移实时增加对应的信息片段</span></div></li><li><i>3</i><div><b>收多少，精简多少</b><span>不用说字数，用指尖直接控制内容长度</span></div></li>';
+  autoDemo.textContent='观看双指演示';speechCaption.classList.remove('show');
+}
+
+function setSemanticIndex(next,animate=true){
+  next=Math.max(0,Math.min(semanticLevels.length-1,next));if(next===semanticIndex)return;semanticIndex=next;
+  stage.classList.remove('density-simple','density-detailed','density-normal');if(next<=1)stage.classList.add('density-simple');else if(next>=4)stage.classList.add('density-detailed');else stage.classList.add('density-normal');phrase.firstChild.textContent=semanticLevels[next];
+  if(animate){phrase.classList.remove('semantic-pop');void phrase.offsetWidth;phrase.classList.add('semantic-pop')}navigator.vibrate?.(5);
+}
+function applyDensity(level){
+  setSemanticIndex({simple:0,normal:2,detailed:6}[level]);
+}
+async function autoRun(){
+  autoDemo.disabled=true;
+  if(state!=='idle'){location.reload();return}
+  const sr=stage.getBoundingClientRect(),r=phrase.getBoundingClientRect();
+  const y=r.top-sr.top+r.height*.52,x1=r.left-sr.left+4,x2=r.right-sr.left-4;
+  pointAt(x1,y,true);await wait(250);phrase.classList.add('selecting');
+  await touchDot.animate([{left:x1+'px'},{left:x2+'px'}],{duration:850,easing:'ease-in-out',fill:'forwards'}).finished;
+  select(true);await wait(560);await wait(1850);pointAt(x2,y,false);execute();await wait(900);
+  let nr=phrase.getBoundingClientRect(),sy=nr.top-sr.top+nr.height*.5,sx=nr.right-sr.left-14,ex=nr.left-sr.left+24;
+  pointAt(sx,sy,true);await touchDot.animate([{left:sx+'px'},{left:ex+'px'}],{duration:720,easing:'ease-in-out',fill:'forwards'}).finished;showAnswer(1,1);pointAt(ex,sy,false);await wait(850);
+  pointAt(sr.width*.83,sr.height*.69,true);await wait(180);tapSpace.dispatchEvent(new PointerEvent('pointerdown'));pointAt(sr.width*.83,sr.height*.69,false);await wait(420);touchDot.style.opacity='0';autoDemo.disabled=false;autoDemo.textContent='重新观看';
+}
+async function autoRunScale(){
+  const run=demoEpoch;autoDemo.disabled=true;applyDensity('normal');
+  const sr=stage.getBoundingClientRect(),r=phrase.getBoundingClientRect(),cy=r.top-sr.top+r.height*.55,cx=r.left-sr.left+r.width*.48;
+  let a={x:cx-4,y:cy-10},b={x:cx+4,y:cy+10};pointEl(touchDot,a.x,a.y,true);pointEl(touchDot2,b.x,b.y,true);drawPinch(a,b);await wait(500);
+  if(run!==demoEpoch)return;const ao={x:cx-6,y:cy-27},bo={x:cx+6,y:cy+27};const aa=touchDot.animate([{left:a.x+'px',top:a.y+'px'},{left:ao.x+'px',top:ao.y+'px'}],{duration:1100,easing:'ease-in-out',fill:'forwards'});const bb=touchDot2.animate([{left:b.x+'px',top:b.y+'px'},{left:bo.x+'px',top:bo.y+'px'}],{duration:1100,easing:'ease-in-out',fill:'forwards'});for(let i=0;i<=22;i++){if(run!==demoEpoch)return;const q=i/22;drawPinch({x:a.x+(ao.x-a.x)*q,y:a.y+(ao.y-a.y)*q},{x:b.x+(bo.x-b.x)*q,y:b.y+(bo.y-b.y)*q});setSemanticIndex(2+Math.round(q*4),false);await wait(50)}await Promise.all([aa.finished,bb.finished]);await wait(1400);if(run!==demoEpoch)return;
+  pointEl(touchDot,ao.x,ao.y,true);pointEl(touchDot2,bo.x,bo.y,true);drawPinch(ao,bo);await wait(350);if(run!==demoEpoch)return;const ai={x:cx-3,y:cy-5},bi={x:cx+3,y:cy+5};const ca=touchDot.animate([{left:ao.x+'px',top:ao.y+'px'},{left:ai.x+'px',top:ai.y+'px'}],{duration:1100,easing:'ease-in-out',fill:'forwards'});const cb=touchDot2.animate([{left:bo.x+'px',top:bo.y+'px'},{left:bi.x+'px',top:bi.y+'px'}],{duration:1100,easing:'ease-in-out',fill:'forwards'});for(let i=0;i<=22;i++){if(run!==demoEpoch)return;const q=i/22;drawPinch({x:ao.x+(ai.x-ao.x)*q,y:ao.y+(ai.y-ao.y)*q},{x:bo.x+(bi.x-bo.x)*q,y:bo.y+(bi.y-bo.y)*q});setSemanticIndex(6-Math.round(q*6),false);await wait(50)}await Promise.all([ca.finished,cb.finished]);if(run!==demoEpoch)return;pointEl(touchDot,ai.x,ai.y,false);pointEl(touchDot2,bi.x,bi.y,false);drawPinch(ai,bi,false);await wait(600);if(run!==demoEpoch)return;touchDot.style.opacity=touchDot2.style.opacity='0';autoDemo.disabled=false;autoDemo.textContent='重新观看';
+}
+async function autoRunFeature3(){
+  autoDemo.disabled=true;f3Note.classList.remove('f3-done');f3Points=[];f3Draw();f3Path.style.opacity='1';const w=stage.clientWidth,h=stage.clientHeight,cx=w*.25,cy=h*.51,rx=w*.19,ry=h*.34;
+  pointEl(touchDot,cx+rx,cy,true);f3Points.push({x:cx+rx,y:cy});for(let i=1;i<=38;i++){const a=i/38*Math.PI*2,p={x:cx+Math.cos(a)*rx,y:cy+Math.sin(a)*ry};pointEl(touchDot,p.x,p.y,true);f3Points.push(p);f3Draw();await wait(24)}
+  const start=f3Points.at(-1),end={x:w*.72,y:h*.48};for(let i=1;i<=30;i++){const q=i/30,p={x:start.x+(end.x-start.x)*q,y:start.y+(end.y-start.y)*q};pointEl(touchDot,p.x,p.y,true);f3Points.push(p);f3Draw();await wait(28)}
+  Object.assign(f3Halo.style,{left:(cx-rx)+'px',top:(cy-ry)+'px',width:(rx*2)+'px',height:(ry*2)+'px'});f3Halo.classList.add('show');f3BeginListening();await wait(2300);pointEl(touchDot,end.x,end.y,false);f3Execute();await wait(1100);touchDot.style.opacity='0';autoDemo.disabled=false;autoDemo.textContent='重新观看';
+}
+async function autoRunFeature4(){
+  if(!f4HasSelection)return;const run=demoEpoch;autoDemo.disabled=true;feature4View.classList.remove('f4-result');f4Suggestion.classList.remove('show');speechCaption.classList.add('show');speechCaption.classList.remove('processing');speechState.textContent='正在聆听';speechText.textContent='';speechIndex=0;clearInterval(speechTimer);speechTimer=setInterval(()=>{if(run!==demoEpoch){clearInterval(speechTimer);return}speechText.textContent=travelInstruction.slice(0,++speechIndex);if(speechIndex>=travelInstruction.length)clearInterval(speechTimer)},72);await wait(2300);if(run!==demoEpoch)return;
+  clearInterval(speechTimer);speechText.textContent=travelInstruction;speechCaption.classList.add('processing');speechState.textContent='正在查找行程信息';f4Suggestion.classList.add('show');await wait(1200);if(run!==demoEpoch)return;speechState.textContent='正在生成旅行计划';await wait(850);if(run!==demoEpoch)return;feature4View.classList.add('f4-result');await wait(720);if(run!==demoEpoch)return;speechCaption.classList.remove('show');await wait(700);if(run!==demoEpoch)return;autoDemo.disabled=false;autoDemo.textContent='重新观看';
+}
+const xlSource=[['商品','1月','2月','3月','季度合计'],['咖啡',120,135,150,''],['茶饮',90,105,115,''],['甜点',75,82,96,''],['面包',60,70,78,'']];
+let xlDragging=false,xlPointer=0,xlStart=null,xlEnd=null,xlBusy=false,xlHoldTimer=0,activeExcelMode='input',xlEntryIndex=0;
+const xlEntrySamples=xlSource.flat().filter(v=>v!=='').map(String);
+const xlLetter=c=>String.fromCharCode(64+c),xlAddr=(r,c)=>xlLetter(c)+r;
+function renderRealExcel(){
+  let html='<span class="xl-cell xl-col"></span>';for(let c=1;c<=8;c++)html+='<span class="xl-cell xl-col">'+xlLetter(c)+'</span>';
+  for(let r=1;r<=14;r++){html+='<span class="xl-cell xl-row">'+r+'</span>';for(let c=1;c<=8;c++){const v=activeExcelMode==='input'?'':xlSource[r-1]?.[c-1]??'';html+='<span class="xl-cell xl-data-cell '+(activeExcelMode!=='input'&&r===1&&c<=5?'xl-head':'')+'" data-r="'+r+'" data-c="'+c+'">'+v+'</span>'}}
+  html+='<span class="xl-selection" id="xlSelection"></span>';xlGrid.innerHTML=html
+}
+function xlCell(r,c){return xlGrid.querySelector('[data-r="'+r+'"][data-c="'+c+'"]')}
+function xlBounds(){if(!xlStart||!xlEnd)return null;return{r1:Math.min(xlStart.r,xlEnd.r),r2:Math.max(xlStart.r,xlEnd.r),c1:Math.min(xlStart.c,xlEnd.c),c2:Math.max(xlStart.c,xlEnd.c)}}
+function semanticSumKind(b=xlBounds()){if(!b)return'';if(b.r1===1&&b.r2===1&&b.c2>=2&&b.c1<=4)return'month';if(b.c1===1&&b.c2===1&&b.r2>=2&&b.r1<=5)return'product';return''}
+function paintExcelSelection(){
+  const b=xlBounds(),box=xlGrid.querySelector('#xlSelection');xlGrid.querySelectorAll('.xl-selected').forEach(x=>x.classList.remove('xl-selected'));if(!b){box.classList.remove('show');return}
+  for(let r=b.r1;r<=b.r2;r++)for(let c=b.c1;c<=b.c2;c++)xlCell(r,c)?.classList.add('xl-selected');const a=xlCell(b.r1,b.c1),z=xlCell(b.r2,b.c2),gr=xlGrid.getBoundingClientRect(),ar=a.getBoundingClientRect(),zr=z.getBoundingClientRect();Object.assign(box.style,{left:(ar.left-gr.left)+'px',top:(ar.top-gr.top)+'px',width:(zr.right-ar.left)+'px',height:(zr.bottom-ar.top)+'px'});box.classList.add('show');xlName.textContent=xlAddr(b.r1,b.c1)+(b.r1===b.r2&&b.c1===b.c2?'':':'+xlAddr(b.r2,b.c2));const nums=selectedExcelNumbers(),semantic=activeExcelMode==='sum'?semanticSumKind(b):'';xlFormula.textContent=activeExcelMode==='input'?'长按并说出要写入的内容':semantic==='month'?'已识别月份表头：将汇总整列':semantic==='product'?'已识别商品类目：将汇总 1–3 月':nums.length?nums.length+' 个数值已选中':'已选中文本区域';xlStatus.textContent=activeExcelMode==='input'?'等待语音输入':semantic==='month'?'说“求和”计算月度总和':semantic==='product'?'说“求和”计算季度合计':nums.length?'计数 '+nums.length+'　求和 '+nums.reduce((a,n)=>a+n,0):'就绪';document.querySelectorAll('.excel-command').forEach(x=>x.disabled=!(nums.length||semantic))
+}
+function selectedExcelNumbers(){const b=xlBounds(),out=[];if(!b)return out;for(let r=b.r1;r<=b.r2;r++)for(let c=b.c1;c<=b.c2;c++){const n=Number(xlCell(r,c)?.textContent.replace(/,/g,''));if(Number.isFinite(n)&&xlCell(r,c)?.textContent.trim()!=='')out.push(n)}return out}
+function resetExcel(){xlStart=xlEnd=null;xlBusy=false;xlEntryIndex=0;renderRealExcel();xlName.textContent='A1';xlFormula.textContent=activeExcelMode==='input'?'新建空白工作表':'简易门店销售表';xlStatus.textContent='就绪';speechCaption.classList.remove('show');document.querySelectorAll('.excel-command').forEach(x=>x.disabled=true)}
+function numericColumns(){const b=xlBounds(),cols=[];if(!b)return cols;for(let c=b.c1;c<=b.c2;c++){let sum=0,count=0;for(let r=b.r1;r<=b.r2;r++){const t=xlCell(r,c)?.textContent.trim(),n=Number(t?.replace(/,/g,''));if(t!==''&&Number.isFinite(n)){sum+=n;count++}}if(count)cols.push({c,sum,label:xlCell(1,c)?.textContent||xlLetter(c)})}return cols}
+function xlRangeSum(r1,r2,c1,c2){let sum=0;for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++){const t=xlCell(r,c)?.textContent.trim(),n=Number(t?.replace(/,/g,''));if(t!==''&&Number.isFinite(n))sum+=n}return sum}
+function writeXlCell(r,c,value){const cell=xlCell(r,c);if(!cell)return;cell.textContent=Number.isFinite(value)?value.toLocaleString():value;cell.classList.add('xl-written')}
+function writeExcelResult(command){
+  const b=xlBounds();if(!b)return;const semantic=command==='求和'?semanticSumKind(b):'';
+  if(semantic==='month'){const c1=Math.max(2,b.c1),c2=Math.min(4,b.c2);for(let c=c1;c<=c2;c++)writeXlCell(6,c,xlRangeSum(2,5,c,c));writeXlCell(6,1,'月度合计');xlFormula.textContent='已根据月份表头汇总 '+xlAddr(2,c1)+':'+xlAddr(5,c2);xlStatus.textContent='已完成 '+(c2-c1+1)+' 个月份的纵向求和';navigator.vibrate?.(20);return}
+  if(semantic==='product'){const r1=Math.max(2,b.r1),r2=Math.min(5,b.r2);for(let r=r1;r<=r2;r++)writeXlCell(r,5,xlRangeSum(r,r,2,4));xlFormula.textContent='已根据商品类目汇总 '+xlAddr(r1,2)+':'+xlAddr(r2,4);xlStatus.textContent='已完成 '+(r2-r1+1)+' 个商品的季度合计';navigator.vibrate?.(20);return}
+  const cols=numericColumns();if(!cols.length)return;
+  if(command.includes('每个月')&&command.includes('季度合计')){const dataR1=Math.max(2,b.r1),dataR2=Math.min(5,b.r2),dataC1=Math.max(2,b.c1),dataC2=Math.min(4,b.c2),totalCol=Math.max(5,dataC2+1),totalRow=Math.max(6,dataR2+1);for(let r=dataR1;r<=dataR2;r++)writeXlCell(r,totalCol,xlRangeSum(r,r,dataC1,dataC2));for(let c=dataC1;c<=dataC2;c++)writeXlCell(totalRow,c,xlRangeSum(dataR1,dataR2,c,c));writeXlCell(totalRow,1,'月度合计');writeXlCell(totalRow,totalCol,xlRangeSum(dataR1,dataR2,dataC1,dataC2));xlFormula.textContent='已理解：按月纵向求和 ＋ 按商品横向求和';xlStatus.textContent='已一次完成 3 个月度合计和 4 个商品季度合计'}
+  else if(command==='求和'&&b.r1===b.r2){const targetCol=Math.min(8,b.c2+1),sum=xlRangeSum(b.r1,b.r2,b.c1,b.c2);writeXlCell(b.r1,targetCol,sum);xlFormula.textContent='=SUM('+xlAddr(b.r1,b.c1)+':'+xlAddr(b.r2,b.c2)+')';xlStatus.textContent='检测到横向选区，结果已写入 '+xlAddr(b.r1,targetCol)}
+  else if(command==='求和'&&b.c1===b.c2){const targetRow=Math.min(14,b.r2+1),sum=xlRangeSum(b.r1,b.r2,b.c1,b.c2);writeXlCell(targetRow,b.c1,sum);if(b.c1>1&&xlCell(targetRow,1)?.textContent==='')writeXlCell(targetRow,1,'月度合计');xlFormula.textContent='=SUM('+xlAddr(b.r1,b.c1)+':'+xlAddr(b.r2,b.c2)+')';xlStatus.textContent='检测到纵向选区，结果已写入 '+xlAddr(targetRow,b.c1)}
+  else if(command==='求和'){const row=Math.min(14,b.r2+1);cols.forEach(({c,sum})=>writeXlCell(row,c,sum));writeXlCell(row,Math.max(1,b.c1-1),'月度合计');xlFormula.textContent='已按列对选区求和';xlStatus.textContent='矩形选区已按月纵向求和'}
+  else if(command.includes('透视')){document.querySelector('.xl-sheet-chart')?.remove();const start=8;[['数据透视表',''],['月份','销售额'],...cols.map(x=>[x.label,x.sum]),['总计',cols.reduce((a,x)=>a+x.sum,0)]].forEach((row,i)=>row.forEach((v,j)=>{const cell=xlCell(start+i,1+j);cell.textContent=v;cell.className='xl-cell xl-data-cell '+(i===0||i===1||i===cols.length+2?'xl-head xl-written':'xl-written')}));xlFormula.textContent='数据透视表：月份 × 销售额';xlStatus.textContent='已在 A8 生成数据透视表'}
+  else{document.querySelector('.xl-sheet-chart')?.remove();const max=Math.max(...cols.map(x=>x.sum)),chart=document.createElement('section');chart.className='xl-sheet-chart';chart.innerHTML='<h3>选中数据的销售对比</h3><div class="xl-chart-bars">'+cols.map(x=>'<i class="xl-bar" style="--h:'+(x.sum/max*82)+'%" data-v="'+x.sum+'" data-m="'+x.label+'"></i>').join('')+'</div>';xlGrid.appendChild(chart);xlFormula.textContent='簇状柱形图：'+xlAddr(b.r1,b.c1)+':'+xlAddr(b.r2,b.c2);xlStatus.textContent='已在当前工作表插入柱状图'}navigator.vibrate?.(20)
+}
+async function runExcelCommand(command){
+  if(activeFeature!==5||xlBusy||!xlBounds())return;const run=demoEpoch;xlBusy=true;document.querySelectorAll('.excel-command').forEach(x=>x.disabled=true);speechCaption.classList.add('show');speechCaption.classList.remove('processing');speechState.textContent='正在聆听';speechText.textContent='';for(let i=1;i<=command.length;i++){if(run!==demoEpoch)return;speechText.textContent=command.slice(0,i);await wait(90)}await wait(250);if(run!==demoEpoch)return;speechCaption.classList.add('processing');speechState.textContent='正在执行';await wait(520);if(run!==demoEpoch)return;writeExcelResult(command);await wait(520);if(run!==demoEpoch)return;speechCaption.classList.remove('show');xlBusy=false;document.querySelectorAll('.excel-command').forEach(x=>x.disabled=false)
+}
+async function runExcelEntry(cell){
+  if(activeExcelMode!=='input'||xlBusy||!cell)return;const run=demoEpoch,value=xlEntrySamples[xlEntryIndex++%xlEntrySamples.length];xlBusy=true;speechCaption.classList.add('show');speechCaption.classList.remove('processing');speechState.textContent='正在聆听';speechText.textContent='';for(let i=1;i<=value.length;i++){if(run!==demoEpoch)return;speechText.textContent=value.slice(0,i);await wait(120)}await wait(220);if(run!==demoEpoch)return;speechCaption.classList.add('processing');speechState.textContent='正在写入';await wait(420);if(run!==demoEpoch)return;cell.textContent=value;cell.classList.add('xl-written');xlFormula.textContent=value;xlStatus.textContent='已通过语音写入 '+xlAddr(+cell.dataset.r,+cell.dataset.c);navigator.vibrate?.(18);await wait(520);if(run!==demoEpoch)return;speechCaption.classList.remove('show');xlBusy=false
+}
+function prepareFeature5(excelMode=activeExcelMode){
+  activeExcelMode=excelMode;
+  document.querySelector('.xl-file').textContent='门店销售表.xlsx';
+  activeFeature=5;state='excel-ready';stage.className='stage feature5';resetExcel();document.querySelectorAll('.feature-item').forEach(x=>x.classList.toggle('active',x.dataset.excelMode===activeExcelMode));autoDemo.style.display='none';excelActions.classList.add('show');
+  if(activeExcelMode==='input'){
+    document.querySelector('#helpTitle').textContent='01 · 语音录入数据';document.querySelector('#helpIntro').textContent='空白工作表不需要先调出键盘：按住目标单元格，直接说出内容，松手后继续录入下一个位置。';document.querySelector('#steps').innerHTML='<li><i>1</i><div><b>按住目标单元格</b><span>触点会标出当前准备写入的位置</span></div></li><li><i>2</i><div><b>直接说出内容</b><span>Demo 会依次模拟商品、月份和销售数字</span></div></li><li><i>3</i><div><b>内容原位写入</b><span>继续按住任意单元格即可接着录入</span></div></li>';excelActions.innerHTML='<p class="excel-hint">请直接在空白表格中长按单元格开始语音录入。</p>'
+  }else if(activeExcelMode==='sum'){
+    document.querySelector('#helpTitle').textContent='02 · 语音数据计算';document.querySelector('#helpIntro').textContent='表头和类目本身就能确定计算范围：按住月份会汇总整列，按住商品会计算这一行的季度合计。';document.querySelector('#steps').innerHTML='<li><i>1</i><div><b>按住“1月”等表头</b><span>说“求和”，结果写入底部月度合计</span></div></li><li><i>2</i><div><b>按住“咖啡”等类目</b><span>说“求和”，自动计算 1–3 月季度合计</span></div></li><li><i>3</i><div><b>也支持框选数字或复合指令</b><span>一次完成多个方向、多个对象的计算</span></div></li>';excelActions.innerHTML='<button class="excel-command" data-command="求和" disabled><b>语音</b>求和</button><button class="excel-command" data-command="帮我求每个月各个商品的总和，并且帮我计算每种商品的季度合计" disabled><b>复合语音</b>每月总和 ＋ 每种商品季度合计</button><p class="excel-hint">可直接选择月份表头、商品类目或具体数字范围。</p>'
+  }else{
+    document.querySelector('#helpTitle').textContent='03 · 语音数据呈现';document.querySelector('#helpIntro').textContent='同一组选区可以直接转换成不同的数据视图，不需要再打开插入菜单或逐项配置字段。';document.querySelector('#steps').innerHTML='<li><i>1</i><div><b>拖选需要分析的数据</b><span>可以选择一个月份、一个商品或完整数据区域</span></div></li><li><i>2</i><div><b>说“做成数据透视表”</b><span>结果直接写入当前工作表</span></div></li><li><i>3</i><div><b>说“做成柱状图”</b><span>根据当前选区生成可视化对比</span></div></li>';excelActions.innerHTML='<button class="excel-command" data-command="做成数据透视表" disabled><b>语音</b>做成数据透视表</button><button class="excel-command" data-command="做成柱状图" disabled><b>语音</b>做成柱状图</button><p class="excel-hint">先拖选范围，再选择希望生成的数据呈现形式。</p>'
+  }
+  excelActions.querySelectorAll('button').forEach(x=>x.onclick=()=>runExcelCommand(x.dataset.command))
+}
+xlGrid.addEventListener('pointerdown',e=>{if(activeFeature!==5||!e.target.matches('.xl-data-cell'))return;e.preventDefault();xlDragging=true;xlPointer=e.pointerId;xlStart=xlEnd={r:+e.target.dataset.r,c:+e.target.dataset.c};paintExcelSelection();try{xlGrid.setPointerCapture(e.pointerId)}catch{}});
+xlGrid.addEventListener('pointermove',e=>{if(!xlDragging||e.pointerId!==xlPointer)return;const cell=document.elementFromPoint(e.clientX,e.clientY)?.closest('.xl-data-cell');if(cell&&xlGrid.contains(cell)){xlEnd={r:+cell.dataset.r,c:+cell.dataset.c};paintExcelSelection()}});xlGrid.addEventListener('pointerup',()=>{xlDragging=false;navigator.vibrate?.(12)});xlGrid.addEventListener('pointercancel',()=>xlDragging=false);
+const armExcelVoice=e=>{clearTimeout(xlHoldTimer);const heldCell=e.target.closest?.('.xl-data-cell');if(activeExcelMode==='input'&&heldCell){const cr=heldCell.getBoundingClientRect(),sr=stage.getBoundingClientRect();pointEl(touchDot,cr.left-sr.left+cr.width/2,cr.top-sr.top+cr.height/2,true)}xlHoldTimer=setTimeout(()=>{const b=xlBounds();if(!xlDragging||!b||xlBusy)return;if(activeExcelMode==='input'){runExcelEntry(heldCell);return}const command=activeExcelMode==='visual'?(b.r1===b.r2||b.c1===b.c2?'做成柱状图':'做成数据透视表'):(b.r1===b.r2||b.c1===b.c2)?'求和':'帮我求每个月各个商品的总和，并且帮我计算每种商品的季度合计';runExcelCommand(command)},620)};xlGrid.addEventListener('pointerdown',armExcelVoice);xlGrid.addEventListener('pointermove',e=>{if(activeExcelMode!=='input')armExcelVoice(e)});xlGrid.addEventListener('pointerup',()=>{clearTimeout(xlHoldTimer);if(activeExcelMode==='input')setTimeout(()=>touchDot.style.opacity='0',260)});xlGrid.addEventListener('pointercancel',()=>{clearTimeout(xlHoldTimer);touchDot.style.opacity='0'});
+document.querySelectorAll('.feature-item').forEach(item=>item.addEventListener('click',()=>{demoEpoch++;clearTimeout(xlHoldTimer);prepareFeature5(item.dataset.excelMode)}));
+autoDemo.onclick=e=>{e.stopImmediatePropagation();activeFeature===4?autoRunFeature4():activeFeature===3?autoRunFeature3():activeFeature===2?autoRunScale():autoRun()};
+resetDemo.onclick=()=>{demoEpoch++;clearInterval(speechTimer);clearTimeout(pressTimer);clearTimeout(f3HoldTimer);speechCaption.classList.remove('show');touchDot.style.opacity=touchDot2.style.opacity='0';autoDemo.disabled=false;if(activeFeature===1)location.reload();else if(activeFeature===2)prepareScale();else if(activeFeature===4)prepareFeature4();else if(activeFeature===6)prepareFeature6();else if(activeFeature===5)prepareFeature5()};
+resetDemo.addEventListener('click',()=>{clearTimeout(f4HoldTimer);clearTimeout(f6HoldTimer);clearTimeout(xlHoldTimer)},{capture:true});
+prepareFeature5();
+</script>
+</body>
+</html>
