@@ -1,9 +1,12 @@
 # Voice Interaction Demo V2
 
-系统语音触屏交互原型，包含两个可切换的演示场景：
+2026-09-08 分享版系统语音触屏交互原型：
 
-- `index.html`：心理健康课程心得写作
-- `excel-demo.html`：表格语音处理
+- `index.html`：完整语音功能演示，也是 Render 首页
+- `完整demo看这里【只看这个文件即可】.html`：原始分享入口
+- `excel-demo.html`：触发方式三中的表格语音演示
+
+HTML 与图片素材必须保持在同一目录，不能只分享单个 HTML。
 
 ## 本地运行
 
